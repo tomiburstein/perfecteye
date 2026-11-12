@@ -1,0 +1,9 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`deterministic RNG > is pinned to known values (guards against accidental changes) 1`] = `
+[
+  0.257571111433208,
+  0.5755947269499302,
+  0.1788965438026935,
+]
+`;

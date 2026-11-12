@@ -1,0 +1,81 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`daily challenge generation > is pinned for a known day (guards against accidental changes) 1`] = `
+{
+  "angle": {
+    "inputBaseDeg": 172,
+    "previewBaseDeg": 64.7,
+    "rayLength": 360,
+    "targetDeg": 111.3,
+    "vertex": {
+      "x": 471,
+      "y": 527.3,
+    },
+  },
+  "center": {
+    "center": {
+      "x": 410.9,
+      "y": 488.1,
+    },
+    "radius": 328.5,
+  },
+  "day": "2026-11-12",
+  "distance": {
+    "a": {
+      "x": 550,
+      "y": 698.2,
+    },
+    "b": {
+      "x": 420.9,
+      "y": 491.8,
+    },
+    "startDistance": 318.6,
+    "trackDeg": 80.9,
+    "trackLength": 427.2,
+  },
+  "gameId": "perfecteye-classic",
+  "half": {
+    "end": {
+      "x": 837.9,
+      "y": 766.3,
+    },
+    "orientation": "horizontal",
+    "start": {
+      "x": 359.5,
+      "y": 766.3,
+    },
+  },
+  "number": 1,
+  "shape": {
+    "start": [
+      {
+        "x": 500,
+        "y": 390,
+      },
+      {
+        "x": 404.7,
+        "y": 555,
+      },
+      {
+        "x": 595.3,
+        "y": 555,
+      },
+    ],
+    "target": [
+      {
+        "x": 757.7,
+        "y": 663.8,
+      },
+      {
+        "x": 362.4,
+        "y": 276.8,
+      },
+      {
+        "x": 187.6,
+        "y": 732,
+      },
+    ],
+  },
+  "version": 1,
+}
+`;
