@@ -2,10 +2,10 @@ import { useMemo } from 'react';
 import { useI18n } from '../../i18n';
 import { dayKeyToMs, type DayKey } from '../../platform/date';
 import type { History } from '../../games/classic/persistence';
-import { ROUND_EMOJI } from '../../games/classic/share';
 import { computeStats } from '../../games/classic/stats';
 import { MAX_TOTAL_SCORE } from '../../games/classic/types';
 import { Modal } from './Modal';
+import { RoundGlyph } from './RoundGlyph';
 
 export function StatsDialog({
   open,
@@ -72,8 +72,8 @@ export function StatsDialog({
           <ul className="by-test">
             {stats.rounds.map((r) => (
               <li key={r.id}>
-                <span>
-                  <span aria-hidden="true">{ROUND_EMOJI[r.id]}</span> {t(`round.${r.id}.name`)}
+                <span className="by-test__name">
+                  <RoundGlyph id={r.id} size={20} /> {t(`round.${r.id}.name`)}
                 </span>
                 <span className="by-test__bar" aria-hidden="true">
                   <span style={{ width: `${r.average ?? 0}%` }} />

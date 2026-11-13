@@ -17,7 +17,6 @@ import {
   type GameProgress,
 } from '../../games/classic/persistence';
 import { ROUNDS, type RoundMode } from '../../games/classic/rounds';
-import { ROUND_EMOJI } from '../../games/classic/share';
 import {
   ROUND_COUNT,
   ROUND_IDS,
@@ -27,6 +26,7 @@ import {
 } from '../../games/classic/types';
 import { useCountUp } from '../hooks';
 import { BackIcon } from '../components/Icons';
+import { RoundGlyph } from '../components/RoundGlyph';
 
 interface Props {
   day: DayKey;
@@ -167,7 +167,8 @@ function RoundStage<K extends RoundId>({
     <>
       <header className="game__head">
         <h1 id="round-title" className="game__title">
-          <span aria-hidden="true">{ROUND_EMOJI[id]}</span> {t(`round.${id}.name`)}
+          <RoundGlyph id={id} size={28} />
+          <span>{t(`round.${id}.name`)}</span>
         </h1>
         <p className="game__instructions">{instructions}</p>
       </header>
@@ -216,6 +217,11 @@ function RoundStage<K extends RoundId>({
                 : ' '}
           </p>
         )}
+        {stage === 'input' && (
+          <p className="kbd-hint">
+            {t(id === 'shape' ? 'game.keysShape' : id === 'angle' ? 'game.keysAngle' : 'game.keys')}
+          </p>
+        )}
         {stage === 'result' ? (
           <button ref={nextBtn} className="btn btn--primary btn--lg btn--block" onClick={onNext}>
             {isLast ? t('game.finish') : t('game.next')}
@@ -247,7 +253,7 @@ function ResultPanel({ id, score, text }: { id: RoundId; score: number; text: st
         </span>
       </div>
       <div className="result__text">
-        <strong>{t(gradeKey(score))}</strong>
+        <strong className="hand">{t(gradeKey(score))}</strong>
         <span>{text}</span>
         <span className="legend">
           <i className="legend__dot legend__dot--user" /> {t('game.legendYours')}

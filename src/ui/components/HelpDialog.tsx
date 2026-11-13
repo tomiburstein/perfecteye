@@ -1,8 +1,8 @@
 import { useI18n } from '../../i18n';
-import { ROUND_EMOJI } from '../../games/classic/share';
 import { ROUND_IDS } from '../../games/classic/types';
 import { useLocalResetTime } from './Countdown';
 import { Modal } from './Modal';
+import { RoundGlyph } from './RoundGlyph';
 
 export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18n();
@@ -14,7 +14,7 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
         <ul className="help-tests">
           {ROUND_IDS.map((id) => (
             <li key={id}>
-              <span aria-hidden="true">{ROUND_EMOJI[id]}</span>
+              <RoundGlyph id={id} size={22} />
               <span>
                 <strong>{t(`round.${id}.name`)}</strong> — {t(`round.${id}.summary`)}
               </span>

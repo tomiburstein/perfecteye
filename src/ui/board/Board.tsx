@@ -1,4 +1,4 @@
-import { useRef, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
+import { useEffect, useRef, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
 import { BOARD_SIZE, clamp, clientToBoard, type Point } from '../../platform/geometry';
 
 export interface BoardProps {
@@ -6,9 +6,15 @@ export interface BoardProps {
   interactive: boolean;
   onDown?: (p: Point) => void;
   onMove?: (p: Point) => void;
-  onKey?: (e: KeyboardEvent<SVGSVGElement>) => void;
+  onKey?: (e: BoardKey) => void;
   onSubmit?: () => void;
   children: ReactNode;
+}
+
+/** The parts of a key press the boards care about (DOM or React event). */
+export interface BoardKey {
+  key: string;
+  shiftKey: boolean;
 }
 
 export const clampToBoard = (p: Point): Point => ({
@@ -18,7 +24,7 @@ export const clampToBoard = (p: Point): Point => ({
 
 /** Arrow-key delta: 1 board unit with Shift (fine), `coarse` otherwise. */
 export function arrowDelta(
-  e: KeyboardEvent,
+  e: BoardKey,
   coarse: number,
   fine: number,
 ): { dx: number; dy: number } | null {
@@ -46,6 +52,29 @@ export function arrowDelta(
 export function Board({ label, interactive, onDown, onMove, onKey, onSubmit, children }: BoardProps) {
   const ref = useRef<SVGSVGElement>(null);
   const activePointer = useRef<number | null>(null);
+  const handlers = useRef({ onKey, onSubmit });
+  handlers.current = { onKey, onSubmit };
+
+  // Arrow keys / 1-2-3 / Enter work from anywhere on the page (no need to
+  // click the board first), except inside dialogs and form fields.
+  useEffect(() => {
+    if (!interactive) return;
+    const listener = (e: globalThis.KeyboardEvent) => {
+      if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
+      const target = e.target instanceof Element ? e.target : null;
+      if (target && ref.current?.contains(target)) return; // handled by the board itself
+      if (target?.closest('input, textarea, select, dialog[open]')) return;
+      if (e.key.startsWith('Arrow') || e.key === '1' || e.key === '2' || e.key === '3') {
+        e.preventDefault();
+        handlers.current.onKey?.(e);
+      } else if (e.key === 'Enter' && !target?.closest('button, a')) {
+        e.preventDefault();
+        handlers.current.onSubmit?.();
+      }
+    };
+    window.addEventListener('keydown', listener);
+    return () => window.removeEventListener('keydown', listener);
+  }, [interactive]);
 
   const toBoard = (e: PointerEvent<SVGSVGElement>): Point => {
     const rect = ref.current?.getBoundingClientRect();
@@ -102,7 +131,7 @@ export function Board({ label, interactive, onDown, onMove, onKey, onSubmit, chi
       onKeyDown={handleKey}
       onContextMenu={(e) => e.preventDefault()}
     >
-      <rect className="board__bg" x="0" y="0" width={BOARD_SIZE} height={BOARD_SIZE} rx="36" />
+      <rect className="board__bg" x="0" y="0" width={BOARD_SIZE} height={BOARD_SIZE} rx="12" />
       {children}
     </svg>
   );

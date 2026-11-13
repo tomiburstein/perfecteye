@@ -15,7 +15,8 @@ export const en = {
   'home.description':
     'Five quick visual precision tests. Everyone gets the same challenge, and a new one arrives every day.',
   'home.challenge': 'Daily challenge #{n}',
-  'home.meta': '≈ 3 minutes · no sign-up',
+  'home.meta': 'about 3 minutes, no sign-up',
+  'home.note': 'Same puzzle for everyone today',
   'home.play': "Play today's challenge",
   'home.continue': "Continue today's challenge",
   'home.results': "See today's results",
@@ -82,6 +83,9 @@ export const en = {
   'game.legendYours': 'Your answer',
   'game.legendTarget': 'Correct',
   'game.points': 'points',
+  'game.keys': 'Keyboard: arrows to fine-tune · Shift + arrows for tiny steps · Enter to confirm',
+  'game.keysShape': 'Keyboard: 1, 2, 3 picks a point · arrows move it · Shift for tiny steps · Enter to confirm',
+  'game.keysAngle': 'Keyboard: arrows rotate the line · Shift for tenths of a degree · Enter to confirm',
 
   'grade.perfect': 'Perfect!',
   'grade.excellent': 'Excellent',

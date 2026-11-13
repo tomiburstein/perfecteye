@@ -15,6 +15,9 @@
   "author": "",
   "license": "UNLICENSED",
   "dependencies": {
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/karla": "^5.3.0",
+    "@fontsource/young-serif": "^5.3.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },

@@ -2,11 +2,12 @@ import { useMemo } from 'react';
 import { useI18n } from '../../i18n';
 import type { DayKey } from '../../platform/date';
 import type { History } from '../../games/classic/persistence';
-import { ROUND_EMOJI } from '../../games/classic/share';
+import { gradeKey } from '../../games/classic/describe';
 import { computeStats } from '../../games/classic/stats';
 import { MAX_TOTAL_SCORE, ROUND_IDS } from '../../games/classic/types';
 import { AdSlot } from '../components/AdSlot';
 import { Countdown } from '../components/Countdown';
+import { RoundGlyph } from '../components/RoundGlyph';
 import { ShareBox } from '../components/ShareBox';
 import { useCountUp } from '../hooks';
 
@@ -50,13 +51,15 @@ export function ResultsScreen({
         <span className="total__num">{shownTotal}</span>
         <span className="total__max">/{MAX_TOTAL_SCORE}</span>
       </div>
-      <p className="total__label">{t('results.total')}</p>
+      <p className="total__label">
+        {t('results.total')} · <span className="hand total__remark">{t(gradeKey(Math.round(entry.total / 5)))}</span>
+      </p>
 
       <ul className="rows">
         {ROUND_IDS.map((id, i) => (
           <li key={id} className="row" style={{ animationDelay: `${i * 60}ms` }}>
             <span className="row__name">
-              <span aria-hidden="true">{ROUND_EMOJI[id]}</span> {t(`round.${id}.name`)}
+              <RoundGlyph id={id} size={22} /> <span>{t(`round.${id}.name`)}</span>
             </span>
             <span className="row__bar" aria-hidden="true">
               <span style={{ width: `${entry.scores[i]}%` }} />

@@ -16,7 +16,8 @@ export const es: Messages = {
   'home.description':
     'Cinco pruebas rápidas de precisión visual. Todos reciben el mismo desafío, y cada día llega uno nuevo.',
   'home.challenge': 'Desafío diario #{n}',
-  'home.meta': '≈ 3 minutos · sin registro',
+  'home.meta': 'unos 3 minutos, sin registro',
+  'home.note': 'Hoy todos juegan el mismo',
   'home.play': 'Jugar el desafío de hoy',
   'home.continue': 'Continuar el desafío de hoy',
   'home.results': 'Ver los resultados de hoy',
@@ -86,6 +87,9 @@ export const es: Messages = {
   'game.legendYours': 'Tu respuesta',
   'game.legendTarget': 'Correcto',
   'game.points': 'puntos',
+  'game.keys': 'Teclado: flechas para ajustar · Mayús + flechas para pasos mínimos · Enter para confirmar',
+  'game.keysShape': 'Teclado: 1, 2, 3 elige un punto · flechas lo mueven · Mayús para pasos mínimos · Enter para confirmar',
+  'game.keysAngle': 'Teclado: flechas giran la línea · Mayús para décimas de grado · Enter para confirmar',
 
   'grade.perfect': '¡Perfecto!',
   'grade.excellent': 'Excelente',

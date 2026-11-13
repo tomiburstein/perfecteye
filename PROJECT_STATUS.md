@@ -1,6 +1,6 @@
 # Estado del proyecto — PerfectEye
 
-Última actualización: 2026-11-12 · Versión 1.0.0 (MVP)
+Última actualización: 2026-11-13 · Versión 1.0.0 (MVP)
 
 ## ✅ Funcionalidades completadas
 
@@ -13,7 +13,8 @@
 - **Compartir:** compartir nativo del dispositivo (si está disponible), copiar, WhatsApp, X y Telegram. El mensaje no revela las soluciones.
 - **Inglés y español:** se detecta el idioma del navegador, se puede cambiar a mano y la preferencia queda guardada.
 - **Modo claro y oscuro:** sigue al sistema por defecto, se puede cambiar a mano y queda guardado.
-- Diseño propio (CSS y SVG), mobile-first y responsive. Respeta la preferencia de "movimiento reducido".
+- Diseño propio con estética de **cuaderno de campo**: papel con textura, tinta, anotaciones a mano, cinta adhesiva, barras sombreadas a lápiz e íconos dibujados. El modo oscuro es tipo pizarrón. Es mobile-first y responsive, y respeta la preferencia de "movimiento reducido". Usa las tipografías Young Serif, Karla y Caveat (licencia libre OFL), incluidas en el propio sitio, sin pedir nada a Google.
+- **Teclado en computadora:** las flechas ajustan la respuesta sin hacer clic antes en el tablero. Mayús + flechas da pasos mínimos y Enter confirma. En La forma perfecta, 1, 2 y 3 eligen el punto. Se muestra una ayuda en pantalla.
 - Seguridad: política CSP estricta y cabeceras de seguridad (`public/_headers`). Todo lo que se lee del almacenamiento se valida. No hay secretos ni solicitudes externas.
 - Espacios reservados (desactivados) para futuros anuncios en inicio y resultados.
 - Íconos, manifest e imagen para redes sociales.
@@ -31,7 +32,8 @@
 | Figuras dentro del tablero, sin configuraciones triviales | ✅ (sobre 1000 días) |
 | Guardado y validación de datos (incluidos datos corruptos o manipulados) | ✅ |
 | No se puede puntuar dos veces (lógica y recarga real en el navegador) | ✅ |
-| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 57 pasan, 3 omitidas a propósito (teclado solo en escritorio) |
+| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 58 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Flechas sin hacer clic antes, Mayús para pasos finos, 1/2/3 en la forma | ✅ |
 | Partida completa, resultados, estadísticas | ✅ |
 | Diseño: sin scroll horizontal, tablero cuadrado y botón visible en las 5 pruebas, en ambos idiomas | ✅ |
 | Arrastre táctil sin que se desplace la página | ✅ (eventos táctiles emulados) |
@@ -72,7 +74,7 @@
 - **Pruebas de memoria con la base rotada** (ángulo): obliga a recordar la apertura y no la posición en pantalla.
 - **Triángulo con correspondencia óptima**: se prueban las 6 asignaciones posibles entre vértices y se usa la mejor. Así no importa qué punto mueve el jugador.
 - **Se guardan las respuestas, no los puntajes**, de las partidas en curso. El puntaje se recalcula de forma determinista. Las partidas terminadas guardan su puntaje en el historial.
-- **Sin fuentes externas** (se usa la tipografía del sistema), para que cargue rápido y sin pedir nada a terceros.
+- **Tipografías incluidas en el propio sitio** (paquetes @fontsource, subconjunto latino), sin pedir nada a terceros. Los puntajes usan Karla porque en la serifa el 0 y el 1 se confunden con O e I.
 
 ## 🚀 Próximos pasos sugeridos
 

@@ -209,6 +209,37 @@ test('keyboard can play a round', async ({ page, isMobile }) => {
   await expect(page.locator('.result')).toBeVisible();
 });
 
+test('arrow keys adjust the answer without clicking the board first', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'keyboard test only on desktop');
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await expect(page.getByText(/Keyboard: arrows to fine-tune/)).toBeVisible();
+  await page.keyboard.press('ArrowRight');
+  const marker = page.locator('.mk-user');
+  await expect(marker).toHaveAttribute('transform', 'translate(505 500)');
+  await page.keyboard.press('Shift+ArrowDown');
+  await expect(marker).toHaveAttribute('transform', 'translate(505 501)');
+  await page.keyboard.press('Enter');
+  await expect(page.locator('.result')).toBeVisible();
+  // Perfect Shape: 1/2/3 choose a point, arrows move it.
+  for (let i = 0; i < 4; i++) {
+    await page.getByRole('button', { name: /^(Next test)$/ }).click();
+    const show = page.getByRole('button', { name: 'Show me' });
+    if (await show.isVisible()) {
+      await show.click();
+      await page.clock.runFor(5500);
+    }
+    if (i === 3) break;
+    await page.keyboard.press('ArrowUp');
+    await page.keyboard.press('Enter');
+  }
+  const before = await page.locator('.mk-user').nth(1).locator('circle').first().getAttribute('cx');
+  await page.keyboard.press('2');
+  await page.keyboard.press('ArrowRight');
+  const after = await page.locator('.mk-user').nth(1).locator('circle').first().getAttribute('cx');
+  expect(Number(after) - Number(before)).toBeCloseTo(5, 5);
+});
+
 test('corrupted storage does not break the app', async ({ page }) => {
   const errors = await collectErrors(page);
   await page.addInitScript(() => {

@@ -4,8 +4,8 @@
   "description": "A daily game of visual precision.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f6f8",
-  "theme_color": "#3b55e6",
+  "background_color": "#e7e8e0",
+  "theme_color": "#23261f",
   "icons": [
     { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
     { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
