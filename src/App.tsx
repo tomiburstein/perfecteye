@@ -62,14 +62,26 @@ export function App() {
 
   const go = useCallback((next: Screen) => {
     setScreen((prev) => {
-      if (prev.name === 'home' && next.name !== 'home') window.history.pushState({ pe: next.name }, '');
+      if (prev.name === 'home' && next.name !== 'home') {
+        try {
+          window.history.pushState({ pe: next.name }, '');
+        } catch {
+          /* history not available (e.g. embedded preview): back button just won't be intercepted */
+        }
+      }
       return next;
     });
     window.scrollTo({ top: 0 });
   }, []);
 
   const goHome = useCallback(() => {
-    if (window.history.state?.pe) window.history.back();
+    let viaHistory = false;
+    try {
+      viaHistory = Boolean(window.history.state?.pe);
+    } catch {
+      /* ignore */
+    }
+    if (viaHistory) window.history.back();
     else setScreen({ name: 'home' });
   }, []);
 
