@@ -31,7 +31,8 @@ export function HomeScreen({ today, history, todayProgress, resumableDay, onPlay
   const { t, lang } = useI18n();
   const resetLocal = useLocalResetTime();
   const done = history[today];
-  const started = todayProgress?.rounds.some((r) => r !== null) ?? false;
+  const started =
+    (todayProgress?.rounds.some((r) => r !== null) || todayProgress?.inputStartedAt.some((t) => t !== null)) ?? false;
   const dateLabel = new Intl.DateTimeFormat(lang, {
     day: 'numeric',
     month: 'long',

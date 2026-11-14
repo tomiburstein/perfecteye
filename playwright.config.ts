@@ -2,7 +2,8 @@ import { defineConfig, devices } from '@playwright/test';
 
 /**
  * Browser tests run against the production build (`npm run build` first),
- * served by `vite preview`.
+ * served by Cloudflare's local runtime (wrangler) so the ranking API and its
+ * D1 database are real. The database starts empty on every run.
  */
 export default defineConfig({
   testDir: './e2e',
@@ -14,9 +15,10 @@ export default defineConfig({
     trace: 'off',
   },
   webServer: {
-    command: 'npx vite preview --port 4173 --strictPort',
+    command:
+      'rm -rf .wrangler/state && npx wrangler pages dev dist --port 4173 --d1 DB --binding PE_TEST_ANY_DAY=1 --compatibility-date 2026-11-01',
     url: 'http://localhost:4173',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 60_000,
   },
   projects: [

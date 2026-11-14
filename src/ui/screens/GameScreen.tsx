@@ -5,14 +5,17 @@ import type { KeyValueStore } from '../../platform/storage';
 import { describeError, gradeKey } from '../../games/classic/describe';
 import { evaluateRound } from '../../games/classic/evaluate';
 import { generateDailyChallenge, generatePracticeChallenge } from '../../games/classic/generator';
+import { ROUND_TIME_MS } from '../../games/classic/config';
 import {
   confirmRound,
   currentRoundIndex,
   isFinished,
   loadProgress,
+  markInputStarted,
   markPreviewed,
   newProgress,
   recordFinished,
+  recordPractice,
   saveProgress,
   scoresFor,
   type GameProgress,
@@ -26,7 +29,7 @@ import {
   type GameRef,
   type RoundId,
 } from '../../games/classic/types';
-import { useCountUp } from '../hooks';
+import { useCountUp, useNow } from '../hooks';
 import { BackIcon } from '../components/Icons';
 import { RoundGlyph } from '../components/RoundGlyph';
 
@@ -80,12 +83,18 @@ export function GameScreen({ game, store, onFinish, onExit }: Props) {
             <li
               key={rid}
               className={`progress__seg${i < view || progress.rounds[i] ? ' is-done' : ''}${i === view ? ' is-current' : ''}`}
-            />
+            >
+              {i === view && !progress.rounds[i] && <TimerFill startedAt={progress.inputStartedAt[i]} />}
+            </li>
           ))}
         </ol>
-        <span className="game__count">
-          {view + 1}/{ROUND_COUNT}
-        </span>
+        {progress.inputStartedAt[view] !== null && !progress.rounds[view] ? (
+          <TimerText startedAt={progress.inputStartedAt[view] as number} />
+        ) : (
+          <span className="game__count">
+            {view + 1}/{ROUND_COUNT}
+          </span>
+        )}
       </div>
       {!daily && <p className="mode-tag hand">{t('mode.practice')}</p>}
       <RoundStage
@@ -95,16 +104,55 @@ export function GameScreen({ game, store, onFinish, onExit }: Props) {
         challenge={challenge}
         progress={progress}
         onPreviewStart={() => update(markPreviewed(progress, view))}
-        onConfirm={(answer) => {
-          const next = confirmRound(progress, view, answer, Date.now());
+        onInputStart={() => setProgress((p) => {
+          const next = markInputStarted(p, view, Date.now());
+          if (daily && next !== p) saveProgress(store, next);
+          return next;
+        })}
+        onConfirm={(answer, timedOut) => {
+          const next = confirmRound(progress, view, answer, Date.now(), timedOut);
           if (!next) return;
           update(next);
-          if (daily && isFinished(next)) recordFinished(store, next, Date.now());
+          if (!isFinished(next)) return;
+          if (daily) recordFinished(store, next, Date.now());
+          else if (game.kind === 'practice')
+            recordPractice(store, { id: game.id, day, scores: scoresFor(challenge, next) as number[], finishedAt: Date.now() });
         }}
         onNext={() => setView(view + 1)}
         isLast={view === ROUND_COUNT - 1}
       />
     </main>
+  );
+}
+
+/** Remaining time in the current round, from a start timestamp. */
+function useRemaining(startedAt: number | null): number {
+  const now = useNow(250);
+  if (startedAt === null) return ROUND_TIME_MS;
+  return Math.max(0, startedAt + ROUND_TIME_MS - now.getTime());
+}
+
+function TimerFill({ startedAt }: { startedAt: number | null }) {
+  const remaining = useRemaining(startedAt);
+  return (
+    <span
+      className={`progress__timer${remaining <= 10_000 ? ' is-low' : ''}`}
+      style={{ width: `${(remaining / ROUND_TIME_MS) * 100}%` }}
+    />
+  );
+}
+
+function TimerText({ startedAt }: { startedAt: number }) {
+  const { t } = useI18n();
+  const seconds = Math.ceil(useRemaining(startedAt) / 1000);
+  return (
+    <span
+      className={`game__timer${seconds <= 10 ? ' is-low' : ''}`}
+      role="timer"
+      aria-label={t('game.timeLeft', { s: seconds })}
+    >
+      0:{String(seconds).padStart(2, '0')}
+    </span>
   );
 }
 
@@ -114,7 +162,8 @@ interface StageProps<K extends RoundId> {
   challenge: DailyChallenge;
   progress: GameProgress;
   onPreviewStart: () => void;
-  onConfirm: (answer: AnswerMap[K]) => void;
+  onInputStart: () => void;
+  onConfirm: (answer: AnswerMap[K] | null, timedOut: boolean) => void;
   onNext: () => void;
   isLast: boolean;
 }
@@ -125,6 +174,7 @@ function RoundStage<K extends RoundId>({
   challenge,
   progress,
   onPreviewStart,
+  onInputStart,
   onConfirm,
   onNext,
   isLast,
@@ -145,6 +195,28 @@ function RoundStage<K extends RoundId>({
     return 'input';
   });
   const nextBtn = useRef<HTMLButtonElement>(null);
+  const draftRef = useRef(draft);
+  draftRef.current = draft;
+  const startedAt = progress.inputStartedAt[index];
+
+  // 60-second answer timer: starts with the input phase, survives reloads.
+  useEffect(() => {
+    if (stage === 'input' && startedAt === null) onInputStart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, startedAt]);
+
+  useEffect(() => {
+    if (stage !== 'input' || startedAt === null) return;
+    const timer = window.setTimeout(
+      () => {
+        onConfirm(draftRef.current, true); // whatever is on the board counts
+        setStage('result');
+      },
+      Math.max(0, startedAt + ROUND_TIME_MS - Date.now()),
+    );
+    return () => window.clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stage, startedAt]);
 
   // Preview timer for memory rounds.
   useEffect(() => {
@@ -157,14 +229,22 @@ function RoundStage<K extends RoundId>({
     if (stage === 'result') nextBtn.current?.focus({ preventScroll: true });
   }, [stage]);
 
-  const result = useMemo(
-    () => (confirmed ? evaluateRound(challenge, id, confirmed.answer as AnswerMap[K]) : null),
-    [confirmed, challenge, id],
-  );
+  const result = useMemo(() => {
+    if (!confirmed) return null;
+    if (confirmed.answer === null) return { score: 0, error: Number.NaN, details: {} };
+    return evaluateRound(challenge, id, confirmed.answer as AnswerMap[K]);
+  }, [confirmed, challenge, id]);
+
+  const resultText = () => {
+    if (!confirmed || !result) return '';
+    if (confirmed.answer === null) return t('game.timeUpNoAnswer');
+    const text = describeError(i18n, id, result);
+    return confirmed.timedOut ? `${t('game.timeUp')} ${text}` : text;
+  };
 
   const submit = () => {
     if (stage !== 'input' || !draft) return;
-    onConfirm(draft);
+    onConfirm(draft, false);
     setStage('result');
   };
 
@@ -218,7 +298,7 @@ function RoundStage<K extends RoundId>({
 
       <footer className="game__foot">
         {stage === 'result' && result ? (
-          <ResultPanel id={id} score={result.score} text={describeError(i18n, id, result)} />
+          <ResultPanel id={id} score={result.score} text={resultText()} />
         ) : (
           <p className="game__hint" aria-live="polite">
             {stage === 'input' && alreadyPreviewedOnMount.current

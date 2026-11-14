@@ -1,5 +1,5 @@
 import { LANGS, useI18n, type Lang } from '../../i18n';
-import { HelpIcon, MoonIcon, StatsIcon, SunIcon } from './Icons';
+import { HelpIcon, MoonIcon, SunIcon, TrophyIcon } from './Icons';
 import { Logo } from './Logo';
 
 export function Header({
@@ -27,8 +27,8 @@ export function Header({
         <button className="icon-btn" onClick={onHelp} aria-label={t('header.help')} title={t('header.help')}>
           <HelpIcon />
         </button>
-        <button className="icon-btn" onClick={onStats} aria-label={t('header.stats')} title={t('header.stats')}>
-          <StatsIcon />
+        <button className="icon-btn" onClick={onStats} aria-label={t('header.boards')} title={t('header.boards')}>
+          <TrophyIcon />
         </button>
         <button
           className="icon-btn"

@@ -57,7 +57,9 @@ describe('scoreFromError', () => {
     expect(scoreRound('half', 0.02)).toBe(89);
     expect(scoreRound('angle', 5)).toBe(88);
     expect(scoreRound('angle', 10)).toBe(64);
-    expect(scoreRound('distance', 0.05)).toBe(84);
+    expect(scoreRound('distance', 0.05)).toBe(97);
+    expect(scoreRound('distance', 0.1)).toBe(82);
+    expect(scoreRound('distance', 0.2)).toBe(37);
     expect(scoreRound('shape', 0.04)).toBe(81);
   });
 });

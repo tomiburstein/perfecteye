@@ -4,20 +4,9 @@ import { dayKeyToMs, type DayKey } from '../../platform/date';
 import type { History } from '../../games/classic/persistence';
 import { computeStats } from '../../games/classic/stats';
 import { MAX_TOTAL_SCORE } from '../../games/classic/types';
-import { Modal } from './Modal';
 import { RoundGlyph } from './RoundGlyph';
 
-export function StatsDialog({
-  open,
-  onClose,
-  history,
-  today,
-}: {
-  open: boolean;
-  onClose: () => void;
-  history: History;
-  today: DayKey;
-}) {
+export function StatsPanel({ history, today }: { history: History; today: DayKey }) {
   const { t, num, lang } = useI18n();
   const stats = useMemo(() => computeStats(history, today), [history, today]);
   const dayFmt = useMemo(
@@ -35,7 +24,7 @@ export function StatsDialog({
   ];
 
   return (
-    <Modal title={t('stats.title')} open={open} onClose={onClose}>
+    <div className="stats-panel">
       <div className="stat-tiles">
         {tiles.map(([label, value]) => (
           <div key={label} className="stat-tile">
@@ -88,6 +77,6 @@ export function StatsDialog({
         </>
       )}
       <p className="fineprint">{t('stats.local')}</p>
-    </Modal>
+    </div>
   );
 }

@@ -24,11 +24,17 @@ import {
 export const STORAGE_KEYS = {
   progress: `${GAME_ID}.v1.progress`,
   history: `${GAME_ID}.v1.history`,
+  practice: `${GAME_ID}.v1.practiceHistory`,
 } as const;
 
+/** Maximum free-play games kept on the device. */
+export const PRACTICE_HISTORY_LIMIT = 300;
+
 export interface ConfirmedRound {
-  answer: AnyAnswer;
+  /** null only when time ran out before any answer was placed (scores 0). */
+  answer: AnyAnswer | null;
   at: number;
+  timedOut?: true;
 }
 
 export interface GameProgress {
@@ -38,6 +44,8 @@ export interface GameProgress {
   rounds: (ConfirmedRound | null)[];
   /** Memory rounds whose target was already shown (cannot be shown again). */
   previewed: boolean[];
+  /** When each round's 60-second answer timer started (survives reloads). */
+  inputStartedAt: (number | null)[];
 }
 
 export interface HistoryEntry {
@@ -67,8 +75,13 @@ export function parseProgress(value: unknown): GameProgress | null {
       rounds.push(null);
       continue;
     }
-    if (!isRecord(r) || !isTimestamp(r.at) || !isValidAnswer(ROUND_IDS[i], r.answer)) return null;
-    rounds.push({ answer: r.answer as AnyAnswer, at: r.at });
+    if (!isRecord(r) || !isTimestamp(r.at)) return null;
+    if (r.answer === null && r.timedOut === true) {
+      rounds.push({ answer: null, at: r.at, timedOut: true });
+      continue;
+    }
+    if (!isValidAnswer(ROUND_IDS[i], r.answer)) return null;
+    rounds.push({ answer: r.answer as AnyAnswer, at: r.at, ...(r.timedOut === true ? { timedOut: true as const } : {}) });
   }
   // Rounds must be confirmed in order: no gaps.
   const firstOpen = rounds.indexOf(null);
@@ -79,6 +92,10 @@ export function parseProgress(value: unknown): GameProgress | null {
     startedAt: value.startedAt,
     rounds,
     previewed: value.previewed.map((p) => p === true),
+    inputStartedAt:
+      Array.isArray(value.inputStartedAt) && value.inputStartedAt.length === ROUND_COUNT
+        ? value.inputStartedAt.map((t) => (isTimestamp(t) ? t : null))
+        : Array.from({ length: ROUND_COUNT }, () => null),
   };
 }
 
@@ -145,6 +162,7 @@ export function newProgress(day: DayKey, now: number): GameProgress {
     startedAt: now,
     rounds: Array.from({ length: ROUND_COUNT }, () => null),
     previewed: Array.from({ length: ROUND_COUNT }, () => false),
+    inputStartedAt: Array.from({ length: ROUND_COUNT }, () => null),
   };
 }
 
@@ -163,14 +181,23 @@ export const isFinished = (p: GameProgress): boolean => currentRoundIndex(p) ===
 export function confirmRound<K extends RoundId>(
   progress: GameProgress,
   index: number,
-  answer: AnswerMap[K],
+  answer: AnswerMap[K] | null,
   now: number,
+  timedOut = false,
 ): GameProgress | null {
   if (index !== currentRoundIndex(progress)) return null;
-  if (!isValidAnswer(ROUND_IDS[index], answer)) return null;
+  if (answer === null ? !timedOut : !isValidAnswer(ROUND_IDS[index], answer)) return null;
   const rounds = progress.rounds.slice();
-  rounds[index] = { answer, at: now };
+  rounds[index] = { answer, at: now, ...(timedOut ? { timedOut: true as const } : {}) };
   return { ...progress, rounds };
+}
+
+/** Start a round's answer timer (only the first call counts, so reloads don't reset it). */
+export function markInputStarted(progress: GameProgress, index: number, now: number): GameProgress {
+  if (progress.inputStartedAt[index] !== null) return progress;
+  const inputStartedAt = progress.inputStartedAt.slice();
+  inputStartedAt[index] = now;
+  return { ...progress, inputStartedAt };
 }
 
 export function markPreviewed(progress: GameProgress, index: number): GameProgress {
@@ -182,8 +209,13 @@ export function markPreviewed(progress: GameProgress, index: number): GameProgre
 
 export function scoresFor(challenge: DailyChallenge, progress: GameProgress): (number | null)[] {
   return progress.rounds.map((r, i) =>
-    r ? evaluateRound(challenge, ROUND_IDS[i], r.answer as AnswerMap[RoundId]).score : null,
+    r === null ? null : r.answer === null ? 0 : evaluateRound(challenge, ROUND_IDS[i], r.answer as AnswerMap[RoundId]).score,
   );
+}
+
+/** Answers of a game in round order (null = no answer / time ran out). */
+export function answersOf(progress: GameProgress): (AnyAnswer | null)[] {
+  return progress.rounds.map((r) => r?.answer ?? null);
 }
 
 // ---- History ---------------------------------------------------------------
@@ -230,4 +262,39 @@ export function findResumableDay(
     return yesterday;
   }
   return null;
+}
+
+// ---- Free-play history (for "My games"; never part of stats) --------------
+
+export interface PracticeEntry {
+  id: string;
+  day: DayKey;
+  scores: number[];
+  total: number;
+  finishedAt: number;
+}
+
+function parsePracticeEntry(value: unknown): PracticeEntry | null {
+  if (!isRecord(value) || typeof value.id !== 'string' || !/^[0-9a-f]{4,32}$/.test(value.id)) return null;
+  if (!isDayKey(value.day) || !isTimestamp(value.finishedAt)) return null;
+  const { scores } = value;
+  if (!Array.isArray(scores) || scores.length !== ROUND_COUNT) return null;
+  if (!scores.every((s) => typeof s === 'number' && Number.isInteger(s) && s >= 0 && s <= MAX_ROUND_SCORE)) return null;
+  const total = (scores as number[]).reduce((a, b) => a + b, 0);
+  return { id: value.id, day: value.day, scores: scores as number[], total, finishedAt: value.finishedAt };
+}
+
+export function loadPracticeHistory(store: KeyValueStore): PracticeEntry[] {
+  const raw = readJson(store, STORAGE_KEYS.practice);
+  if (!Array.isArray(raw)) return [];
+  return raw.map(parsePracticeEntry).filter((e): e is PracticeEntry => e !== null);
+}
+
+export function recordPractice(
+  store: KeyValueStore,
+  entry: Omit<PracticeEntry, 'total'>,
+): void {
+  const list = loadPracticeHistory(store).filter((e) => e.id !== entry.id);
+  list.push({ ...entry, total: entry.scores.reduce((a, b) => a + b, 0) });
+  writeJson(store, STORAGE_KEYS.practice, list.slice(-PRACTICE_HISTORY_LIMIT));
 }

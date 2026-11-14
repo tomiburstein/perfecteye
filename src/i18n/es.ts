@@ -16,7 +16,7 @@ export const es: Messages = {
   'home.description':
     'Cinco pruebas rápidas de precisión visual. Todos reciben el mismo desafío, y cada día llega uno nuevo.',
   'home.challenge': 'Desafío diario #{n}',
-  'home.meta': 'unos 3 minutos, sin registro',
+  'home.meta': '60 segundos por prueba, sin registro',
   'home.note': 'Hoy todos juegan el mismo',
   'home.play': 'Jugar el desafío de hoy',
   'home.continue': 'Continuar el desafío de hoy',
@@ -95,6 +95,9 @@ export const es: Messages = {
   'game.legendYours': 'Tu respuesta',
   'game.legendTarget': 'Correcto',
   'game.points': 'puntos',
+  'game.timeUp': '¡Se acabó el tiempo!',
+  'game.timeUpNoAnswer': 'Se acabó el tiempo sin respuesta: 0 puntos.',
+  'game.timeLeft': 'Quedan {s} segundos',
   'game.keys': 'Teclado: flechas para ajustar · Mayús + flechas para pasos mínimos · Enter para confirmar',
   'game.keysShape': 'Teclado: 1, 2, 3 elige un punto · flechas lo mueven · Mayús para pasos mínimos · Enter para confirmar',
   'game.keysAngle': 'Teclado: flechas giran la línea · Mayús para décimas de grado · Enter para confirmar',
@@ -150,7 +153,7 @@ export const es: Messages = {
   'help.intro':
     'Cada día hay un desafío con cinco pruebas de precisión visual. Cada prueba vale hasta 100 puntos, con un máximo de 500.',
   'help.how':
-    'Toca o arrastra en el tablero para dar tu respuesta, ajústala si quieres y pulsa Confirmar. Luego verás la respuesta correcta y tu puntuación.',
+    'Toca o arrastra en el tablero para dar tu respuesta, ajústala si quieres y pulsa Confirmar. Tienes 60 segundos por prueba: si se acaba el tiempo, cuenta lo que haya en el tablero. Luego verás la respuesta correcta y tu puntuación.',
   'help.memory':
     'Maestro del ángulo y La forma perfecta muestran su figura una sola vez. Recargar la página no la vuelve a mostrar.',
   'help.daily':
@@ -160,11 +163,42 @@ export const es: Messages = {
   'help.scoring':
     'Tu puntuación depende solo de cuánto se aleja tu respuesta de la correcta, medido en relación con la figura, así que es justa en cualquier pantalla.',
   'help.privacy':
-    'No necesitas cuenta y no se recopilan datos personales. Tu progreso se guarda solo en este navegador.',
+    'No necesitas cuenta y no se recopilan datos personales. Tu progreso se guarda en este navegador. Para el ranking mundial del día solo se envían a nuestro servidor el nombre que elijas y tus respuestas.',
   'help.accessibility':
     'PerfectEye es un juego visual, por lo que no se puede jugar por completo con un lector de pantalla. Todos los tableros se pueden controlar con el teclado (flechas, Mayús para pasos finos, Enter para confirmar).',
   'help.close': 'Cerrar',
 
+  'world.title': 'Hoy en el mundo',
+  'world.loading': 'Comparando con los jugadores de hoy…',
+  'world.better': 'Mejor que el {p}% de los jugadores de hoy',
+  'world.first': 'Eres el primero en jugar hoy. Vuelve más tarde para ver en qué lugar quedas.',
+  'world.rank': 'Puesto {rank} de {n} jugadores',
+  'world.betterShort': 'mejor que el {p}%',
+  'world.firstShort': 'primero de hoy',
+  'world.playingAs': 'Tu nombre en el ranking',
+  'world.change': 'Cambiar',
+  'world.save': 'Guardar',
+  'world.cancel': 'Cancelar',
+  'world.nameHelp': 'De 2 a 20 letras o números. Todos pueden verlo.',
+  'world.nameInvalid': 'Ese nombre no se puede usar. Usa de 2 a 20 letras o números.',
+  'world.unavailable': 'El ranking mundial no está disponible ahora. Tu resultado quedó guardado en este dispositivo.',
+  'world.offline': 'No tienes conexión. Conéctate a internet para ver el ranking mundial.',
+  'world.retry': 'Reintentar',
+  'world.privacy': 'Para el ranking solo se envían al servidor de PerfectEye el nombre que elijas y tus respuestas.',
+  'boards.title': 'Tablas de puntajes',
+  'boards.world': 'Hoy en el mundo',
+  'boards.mine': 'Mis partidas',
+  'boards.players': '{n} jugadores hoy',
+  'boards.empty': 'Nadie jugó todavía el desafío de hoy. ¡Sé el primero!',
+  'boards.mineEmpty': 'Todavía no terminaste ninguna partida.',
+  'boards.recent': 'Recientes',
+  'boards.best': 'Mejores',
+  'boards.daily': 'Diario #{n}',
+  'boards.practice': 'Juego libre',
+  'boards.you': 'tú',
+  'boards.yourRank': 'Tu posición',
+  'header.boards': 'Tablas de puntajes',
+  'player.defaultName': 'Jugador',
   'common.close': 'Cerrar',
   'error.storage':
     'Tu navegador está bloqueando el almacenamiento local, así que tu progreso no se conservará al cerrar esta página.',

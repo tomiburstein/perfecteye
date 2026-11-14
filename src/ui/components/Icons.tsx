@@ -54,3 +54,9 @@ export const CopyIcon = () => (
     <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
   </svg>
 );
+export const TrophyIcon = () => (
+  <svg {...common}>
+    <path d="M8 4.5h8v5a4 4 0 0 1-8 0v-5Z" />
+    <path d="M8 6.5H5.2c0 2.6 1.2 4 3.1 4.3M16 6.5h2.8c0 2.6-1.2 4-3.1 4.3M12 13.5v3.5M8.5 20h7M10 17h4" />
+  </svg>
+);

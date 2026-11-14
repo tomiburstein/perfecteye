@@ -56,9 +56,9 @@ export function HalfBoard({ challenge, mode, answer, onChange, onSubmit }: Round
           <circle className="mk__ring" cx={marker.x} cy={marker.y} r="12" />
         </g>
       )}
-      {mode === 'result' && marker && (
+      {mode === 'result' && (
         <>
-          <ErrorLine from={marker} to={mid} />
+          {marker && <ErrorLine from={marker} to={mid} />}
           <g className="pop">{tick(mid, 46, 'target-stroke')}</g>
           <TargetDot p={mid} />
         </>

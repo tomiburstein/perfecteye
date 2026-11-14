@@ -10,7 +10,7 @@
 | 📍 | Equal Distance | Deslizar C para que B–C mida lo mismo que A–B |
 | 🔺 | Perfect Shape | Memorizar un triángulo (5 s) y redibujarlo |
 
-Cada prueba vale hasta 100 puntos, con un máximo de 500 por día. Además hay un **juego libre** ilimitado, con desafíos nuevos cada vez, que no cuenta en las estadísticas. El desafío cambia todos los días a las **00:00 UTC**. No hace falta registrarse, y funciona en celulares, tablets y computadoras, en inglés y en español.
+Cada prueba tiene 60 segundos y vale hasta 100 puntos, con un máximo de 500 por día. Además hay un **juego libre** ilimitado, con desafíos nuevos cada vez, que no cuenta en las estadísticas. Al terminar el desafío diario ves en qué porcentaje de los jugadores del mundo estás, en total y por prueba, y hay tablas de puntajes: el ranking del día y todas tus partidas. El desafío cambia todos los días a las **00:00 UTC**. No hace falta registrarse, y funciona en celulares, tablets y computadoras, en inglés y en español.
 
 ## Para el dueño del proyecto (sin programar)
 
@@ -19,7 +19,7 @@ Cada prueba vale hasta 100 puntos, con un máximo de 500 por día. Además hay u
 - **Cómo se calculan los puntos:** [docs/SCORING.md](docs/SCORING.md).
 - **Cómo está organizado el código y cómo crecer:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Costo actual: **USD 0**. No hay servidor, base de datos, anuncios ni servicios pagos.
+Costo actual: **USD 0**. El ranking mundial usa el plan gratuito de Cloudflare (Pages Functions + base de datos D1). No hay anuncios ni servicios pagos.
 
 ## Para desarrolladores
 
@@ -38,4 +38,4 @@ Stack: React 19, TypeScript, Vite, SVG y CSS propios (sin librerías de UI). Pru
 
 ## Privacidad
 
-PerfectEye no usa cookies, analítica ni servicios externos. El progreso y las estadísticas se guardan solo en el navegador del jugador (localStorage). Si se borran los datos del navegador, se pierden.
+PerfectEye no usa cookies, analítica ni servicios externos. El progreso y las estadísticas se guardan en el navegador del jugador (localStorage); si se borran los datos del navegador, se pierden. Para el ranking mundial del día solo se envían al servidor propio (en Cloudflare) un identificador aleatorio, el nombre que elige el jugador y sus respuestas.

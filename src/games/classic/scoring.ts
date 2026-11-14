@@ -4,7 +4,7 @@ import type { RoundId } from './types';
  * SCORING FORMULA (documented in docs/SCORING.md)
  *
  *   excess = max(0, error − tolerance)
- *   score  = round( 100 × 2^( −(excess / halfAt)^exponent ) )
+ *   score  = round( 100 × 2^( −(excess / halfAt)^exponent ) )   (exponent 1.5 or 2)
  *
  * - error ≤ tolerance  → 100 (absorbs normal touch / pointer imprecision)
  * - error = tolerance + halfAt → 50
@@ -26,8 +26,9 @@ export const SCORE_CURVES: Record<RoundId, ScoreCurve> = {
   half: { tolerance: 0.005, halfAt: 0.05, exponent: 1.5 },
   // error = angular difference in degrees
   angle: { tolerance: 1, halfAt: 12, exponent: 1.5 },
-  // error = |BC − AB| / AB
-  distance: { tolerance: 0.01, halfAt: 0.1, exponent: 1.5 },
+  // error = |BC − AB| / AB. Gentler curve (exponent 2): comparing lengths in
+  // different directions is hard, so small misses barely cost points.
+  distance: { tolerance: 0.02, halfAt: 0.15, exponent: 2 },
   // error = mean vertex distance / board size
   shape: { tolerance: 0.008, halfAt: 0.07, exponent: 1.5 },
 };

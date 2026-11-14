@@ -1,6 +1,6 @@
 # Arquitectura y mantenimiento
 
-PerfectEye es una **web estática**: no tiene servidor, base de datos ni claves. Todo se ejecuta en el navegador.
+PerfectEye es una **web estática** con un **servidor mínimo** para el ranking mundial: una función de Cloudflare Pages (`functions/api/results.ts`) y una base de datos Cloudflare D1. Todo el juego corre en el navegador y funciona aunque el servidor no responda.
 
 ## Estructura
 
@@ -26,6 +26,11 @@ src/
     rounds/            Tableros SVG interactivos de cada prueba
   ui/                  Pantallas, componentes, hooks y tablero base
   styles/global.css    Diseño (tokens de color para modo claro/oscuro)
+  games/classic/submission.ts  Validación y puntaje de envíos al ranking (compartido cliente/servidor)
+  server/ranking.ts    Consultas a D1: guardar resultado, ranking del día, percentiles
+  platform/api.ts      Cliente del ranking (falla de forma segura sin conexión)
+  platform/player.ts   Identidad anónima del jugador (id aleatorio + nombre elegido)
+functions/api/         Servidor (Cloudflare Pages Functions): GET/POST /api/results
 tests/unit/            Pruebas Vitest (lógica)
 e2e/                   Pruebas Playwright (navegador real, 4 dispositivos)
 public/                Íconos, manifest, cabeceras de seguridad (_headers)
@@ -48,6 +53,20 @@ public/                Íconos, manifest, cabeceras de seguridad (_headers)
 - Todo lo que se lee de localStorage se valida. Los datos corruptos se descartan.
 - Limitación: un usuario técnico puede editar su almacenamiento local o cambiar el reloj de su dispositivo. Como no hay ranking global, esto solo afecta sus propias estadísticas. Un ranking mundial real requiere un servidor que valide los resultados.
 
+## Ranking mundial (servidor)
+
+- `POST /api/results` recibe `{ day, playerId, name, answers }`. El servidor **no acepta puntajes**: regenera el desafío del día y recalcula cada puntaje a partir de las respuestas, con el mismo código que el juego.
+- El **primer** resultado de cada jugador por día es el definitivo. Si se vuelve a enviar, solo se actualiza el nombre.
+- Solo se aceptan resultados de hoy o de ayer (UTC). Los nombres tienen de 2 a 20 letras o números, con un filtro básico de palabras ofensivas.
+- `GET /api/results?day=…&playerId=…` devuelve el top 50 del día, la cantidad de jugadores y tu posición. Los percentiles se calculan como "% de los demás jugadores de hoy con un puntaje menor", total y por prueba.
+- La tabla `results` se crea sola en la primera petición.
+
+**Límites conocidos (decirlo con honestidad):** el generador de desafíos está en el navegador, así que una persona con conocimientos técnicos podría calcular las respuestas perfectas o enviar resultados con muchos ids distintos. El ranking evita que se *inventen* puntajes, pero no evita bots. Mejoras posibles a futuro: Cloudflare Turnstile (gratis) contra bots, semilla secreta en el servidor para que el desafío no se pueda precalcular, y validación del tiempo de juego del lado del servidor.
+
+## Temporizador
+
+Cada prueba da 60 segundos (`ROUND_TIME_MS` en `config.ts`). El inicio se guarda en el progreso, así que recargar la página no reinicia el reloj. Al terminar el tiempo cuenta lo que haya en el tablero; si no hay nada, vale 0.
+
 ## Comandos
 
 | Comando | Qué hace |
@@ -56,7 +75,8 @@ public/                Íconos, manifest, cabeceras de seguridad (_headers)
 | `npm run dev` | Servidor de desarrollo en http://localhost:5173 |
 | `npm test` | Pruebas unitarias |
 | `npm run build` | Compilación de producción en `dist/` |
-| `npm run test:e2e` | Pruebas de navegador (requiere `npm run build` antes) |
+| `npm run test:e2e` | Pruebas de navegador con el servidor y la base de datos reales de Cloudflare en modo local (requiere `npm run build` antes) |
+| `npx wrangler pages dev dist --d1 DB` | Probar la web con el ranking en http://localhost:8788 |
 | `npm run check` | Todo lo anterior en orden |
 
 ## Cómo agregar cosas en el futuro
@@ -66,6 +86,6 @@ public/                Íconos, manifest, cabeceras de seguridad (_headers)
 - **Una prueba nueva dentro de PerfectEye:** agregar su tipo en `types.ts`, su generador en `generator.ts`, su evaluación en `evaluate.ts`, su curva en `scoring.ts`, su tablero en `rounds/` y sus textos. Ojo: cambia el máximo de puntos y el formato del historial, así que conviene versionar las claves de almacenamiento (`.v2`).
 - **Otro juego diario en la misma plataforma:** crear `src/games/<nuevo>/` reutilizando `platform/` (fecha, RNG, almacenamiento, i18n) con su propio `GAME_ID` y sus propias claves de almacenamiento, y agregar una pantalla o ruta para elegir el juego.
 - **Cuenta opcional / sincronización:** implementar otro `KeyValueStore` (en `platform/storage.ts`) que sincronice con un servidor. El historial ya se guarda por día y con datos validados, así que se puede subir tal cual.
-- **Ranking global:** requiere un backend (por ejemplo Cloudflare Workers + D1) que genere o valide las respuestas en el servidor. No está implementado a propósito.
+- **Ranking global:** ya implementado (ver arriba). Para endurecerlo contra bots, ver "Límites conocidos".
 - **Anuncios / patrocinios:** activar `FEATURES.ads` en `platform/site.ts` y completar `ui/components/AdSlot.tsx`. Los espacios ya están reservados en inicio y resultados, nunca durante las pruebas. Para AdSense hay que agregar sus dominios a la política CSP de `public/_headers` y probablemente un aviso de cookies.
 - **Premium:** requiere cuentas y un proveedor de pagos. Conviene empezar por la cuenta opcional.

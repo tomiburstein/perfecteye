@@ -36,9 +36,9 @@ export function CenterBoard({ challenge, mode, answer, onChange, onSubmit }: Rou
     >
       <circle className="shape-stroke" cx={center.x} cy={center.y} r={radius} />
       {answer && <Marker p={answer.point} />}
-      {mode === 'result' && answer && (
+      {mode === 'result' && (
         <>
-          <ErrorLine from={answer.point} to={center} />
+          {answer && <ErrorLine from={answer.point} to={center} />}
           <TargetDot p={center} />
         </>
       )}

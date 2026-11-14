@@ -6,7 +6,7 @@ Código: `src/games/classic/scoring.ts` · Pruebas: `tests/unit/scoring.test.ts`
 
 ```
 exceso  = max(0, error − tolerancia)
-puntaje = redondear( 100 × 2^( −(exceso / mitad)^1.5 ) )
+puntaje = redondear( 100 × 2^( −(exceso / mitad)^p ) )     p = 1.5 (o 2 en Distance)
 ```
 
 - **error ≤ tolerancia → 100.** La tolerancia absorbe la imprecisión normal de un dedo o un mouse.
@@ -24,7 +24,7 @@ Todo se mide en **unidades del tablero** (el tablero mide 1000×1000 sin importa
 | 🎯 Find the Center | distancia al centro ÷ radio del círculo | 1 % | +10 % |
 | 📏 Perfect Half | \|posición − 0,5\| como fracción del largo de la línea | 0,5 % | +5 % |
 | 📐 Angle Master | diferencia en grados entre la apertura construida y la objetivo (vale hacia cualquier lado de la base) | 1° | +12° |
-| 📍 Equal Distance | \|BC − AB\| ÷ AB | 1 % | +10 % |
+| 📍 Equal Distance | \|BC − AB\| ÷ AB (curva más suave, p = 2) | 2 % | +15 % |
 | 🔺 Perfect Shape | distancia media entre vértices ÷ tamaño del tablero, usando la mejor correspondencia entre vértices (se prueban las 6 posibles) | 0,8 % | +7 % |
 
 ## Valores de referencia (verificados por las pruebas automáticas)
@@ -34,7 +34,7 @@ Todo se mide en **unidades del tablero** (el tablero mide 1000×1000 sin importa
 | Center | 2 % → 98 · 3 % → 94 · 5 % → 84 · 10 % → 55 · 20 % → 16 |
 | Half | 1 % → 98 · 2 % → 89 · 3 % → 78 · 5 % → 55 · 10 % → 16 |
 | Angle | 2° → 98 · 3° → 95 · 5° → 88 · 10° → 64 · 15° → 42 · 20° → 25 · 30° → 7 |
-| Distance | 2 % → 98 · 5 % → 84 · 10 % → 55 · 20 % → 16 |
+| Distance | 5 % → 97 · 8 % → 90 · 10 % → 82 · 15 % → 59 · 20 % → 37 · 30 % → 9 |
 | Shape | 2 % → 95 · 4 % → 81 · 6 % → 64 · 10 % → 35 · 15 % → 13 |
 
 ## Cómo ajustar la dificultad

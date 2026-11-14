@@ -15,7 +15,7 @@ export const en = {
   'home.description':
     'Five quick visual precision tests. Everyone gets the same challenge, and a new one arrives every day.',
   'home.challenge': 'Daily challenge #{n}',
-  'home.meta': 'about 3 minutes, no sign-up',
+  'home.meta': '60 seconds per test, no sign-up',
   'home.note': 'Same puzzle for everyone today',
   'home.play': "Play today's challenge",
   'home.continue': "Continue today's challenge",
@@ -91,6 +91,9 @@ export const en = {
   'game.legendYours': 'Your answer',
   'game.legendTarget': 'Correct',
   'game.points': 'points',
+  'game.timeUp': "Time's up!",
+  'game.timeUpNoAnswer': "Time's up with no answer: 0 points.",
+  'game.timeLeft': '{s} seconds left',
   'game.keys': 'Keyboard: arrows to fine-tune · Shift + arrows for tiny steps · Enter to confirm',
   'game.keysShape': 'Keyboard: 1, 2, 3 picks a point · arrows move it · Shift for tiny steps · Enter to confirm',
   'game.keysAngle': 'Keyboard: arrows rotate the line · Shift for tenths of a degree · Enter to confirm',
@@ -145,7 +148,7 @@ export const en = {
   'help.intro':
     'Every day there is one challenge with five visual precision tests. Each test is worth up to 100 points, for a maximum of 500.',
   'help.how':
-    'Tap or drag on the board to give your answer, adjust it if you want, and press Confirm. You then see the correct answer and your score.',
+    'Tap or drag on the board to give your answer, adjust it if you want, and press Confirm. You have 60 seconds per test: when time runs out, whatever is on the board counts. You then see the correct answer and your score.',
   'help.memory':
     'Angle Master and Perfect Shape show their figure only once. Reloading the page will not show it again.',
   'help.daily':
@@ -155,11 +158,42 @@ export const en = {
   'help.scoring':
     'Your score depends only on how far your answer is from the correct one, measured relative to the figure, so it is fair on any screen.',
   'help.privacy':
-    'No account needed and no personal data collected. Your progress is saved only in this browser.',
+    'No account needed and no personal data collected. Your progress is saved in this browser. For the daily world ranking, only the name you choose and your answers are sent to our server.',
   'help.accessibility':
     'PerfectEye is a visual game, so it cannot be fully played with a screen reader. All boards can be controlled with the keyboard (arrow keys, Shift for fine steps, Enter to confirm).',
   'help.close': 'Close',
 
+  'world.title': 'Today around the world',
+  'world.loading': 'Comparing with today’s players…',
+  'world.better': 'Better than {p}% of today’s players',
+  'world.first': 'You’re the first to play today. Check back later to see where you stand.',
+  'world.rank': '#{rank} of {n} players',
+  'world.betterShort': 'better than {p}%',
+  'world.firstShort': 'first today',
+  'world.playingAs': 'Your name in the ranking',
+  'world.change': 'Change',
+  'world.save': 'Save',
+  'world.cancel': 'Cancel',
+  'world.nameHelp': '2–20 letters or numbers. Everyone can see it.',
+  'world.nameInvalid': 'That name can’t be used. Use 2–20 letters or numbers.',
+  'world.unavailable': 'The world ranking isn’t available right now. Your result is saved on this device.',
+  'world.offline': 'You’re offline. Connect to the internet to see the world ranking.',
+  'world.retry': 'Try again',
+  'world.privacy': 'For the ranking, only the name you choose and your answers are sent to the PerfectEye server.',
+  'boards.title': 'Scoreboards',
+  'boards.world': 'Today worldwide',
+  'boards.mine': 'My games',
+  'boards.players': '{n} players today',
+  'boards.empty': 'Nobody has played today’s challenge yet. Be the first!',
+  'boards.mineEmpty': 'You haven’t finished a game yet.',
+  'boards.recent': 'Recent',
+  'boards.best': 'Best',
+  'boards.daily': 'Daily #{n}',
+  'boards.practice': 'Free play',
+  'boards.you': 'you',
+  'boards.yourRank': 'Your position',
+  'header.boards': 'Scoreboards',
+  'player.defaultName': 'Player',
   'common.close': 'Close',
   'error.storage':
     "Your browser is blocking local storage, so your progress won't be kept after you close this page.",

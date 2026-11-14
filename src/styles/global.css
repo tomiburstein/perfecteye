@@ -1252,3 +1252,322 @@ button {
   display: grid;
   gap: 10px;
 }
+
+/* Round timer */
+.progress__seg {
+  position: relative;
+  overflow: hidden;
+}
+.progress__timer {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--pen);
+  transition: width 0.25s linear;
+}
+.progress__timer.is-low,
+.game__timer.is-low {
+  background-color: var(--rust);
+}
+.progress__seg.is-current:not(.is-done):has(.progress__timer) {
+  background: var(--rule);
+}
+.game__timer {
+  min-width: 44px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* World standing (results) */
+.world {
+  display: grid;
+  gap: 12px;
+}
+.world .section-title {
+  margin: 0;
+}
+.world__status {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  color: var(--ink-2);
+  font-size: 0.92rem;
+}
+.world__head {
+  display: grid;
+  gap: 2px;
+}
+.world__big {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+.world__rank {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.world__rounds {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.world__rounds li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+  grid-template-areas: 'name pct' 'meter meter';
+  align-items: center;
+  gap: 4px 10px;
+  font-size: 0.88rem;
+}
+.world__name {
+  grid-area: name;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  min-width: 0;
+}
+.world__pct {
+  grid-area: pct;
+  text-align: right;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.world__meter {
+  grid-area: meter;
+  height: 6px;
+  background: var(--rule);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.world__meter span {
+  display: block;
+  height: 100%;
+  background: var(--moss);
+  animation: grow 0.8s var(--ease) both;
+  transform-origin: left;
+}
+.world__player {
+  display: grid;
+  gap: 4px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--rule);
+}
+.world__as {
+  font-size: 0.9rem;
+  color: var(--ink-2);
+}
+.world__as strong {
+  color: var(--ink);
+}
+.world__player .fineprint {
+  text-align: left;
+}
+.link-btn {
+  border: 0;
+  background: none;
+  padding: 4px 2px;
+  color: var(--pen);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.name-form {
+  display: grid;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+.name-form label {
+  font-weight: 700;
+}
+.name-form__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.name-form input {
+  flex: 1 1 160px;
+  min-width: 0;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1.5px solid var(--ink-2);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+}
+.fineprint.is-error {
+  color: var(--rust);
+}
+
+/* Scoreboards screen */
+.boards {
+  gap: 16px;
+}
+.boards__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.9rem;
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  border-bottom: 1.5px solid var(--ink);
+  overflow-x: auto;
+}
+.tabs__btn {
+  flex: none;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1.5px;
+  background: none;
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.tabs__btn.is-active {
+  color: var(--ink);
+  border-bottom-color: var(--pen);
+}
+[role='tabpanel'] {
+  display: grid;
+  gap: 12px;
+  padding-top: 6px;
+}
+.boards__meta {
+  color: var(--ink-2);
+  font-size: 0.9rem;
+}
+.ranking {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ranking__row {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 4px;
+  border-bottom: 1px dashed var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+.ranking__row:nth-child(-n + 3) .ranking__rank {
+  color: var(--pen);
+  font-family: var(--font-hand);
+  font-size: 1.5rem;
+}
+.ranking__row.is-me {
+  background: linear-gradient(transparent 15%, var(--marker) 15%, var(--marker) 85%, transparent 85%);
+}
+.ranking__mine {
+  margin-top: 6px;
+  border-top: 1.5px solid var(--ink);
+}
+.ranking__rank {
+  font-weight: 700;
+  text-align: center;
+}
+.ranking__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+}
+.ranking__you {
+  color: var(--pen);
+  font-size: 1.1rem;
+}
+.ranking__total {
+  font-weight: 700;
+}
+.seg {
+  display: inline-flex;
+  justify-self: start;
+  border: 1.5px solid var(--ink-2);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg__btn {
+  min-height: 34px;
+  padding: 0 14px;
+  border: 0;
+  background: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.seg__btn.is-active {
+  background: var(--ink);
+  color: var(--paper);
+}
+.games {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.games__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: 'info total' 'scores scores';
+  gap: 6px 12px;
+  padding: 12px 4px;
+  border-bottom: 1px dashed var(--rule);
+}
+.games__info {
+  grid-area: info;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 10px;
+  min-width: 0;
+}
+.games__info span {
+  color: var(--ink-3);
+  font-size: 0.85rem;
+}
+.games__row.is-daily .games__info strong {
+  color: var(--pen);
+}
+.games__total {
+  grid-area: total;
+  font-weight: 700;
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+}
+.games__scores {
+  grid-area: scores;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.82rem;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+.games__scores li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.stats-panel {
+  display: grid;
+  gap: 16px;
+}

@@ -4,11 +4,13 @@ import type { DayKey } from '../../platform/date';
 import { gradeKey } from '../../games/classic/describe';
 import type { History } from '../../games/classic/persistence';
 import { computeStats } from '../../games/classic/stats';
-import { MAX_TOTAL_SCORE, ROUND_IDS, type GameRef } from '../../games/classic/types';
+import { MAX_TOTAL_SCORE, ROUND_IDS, type AnyAnswer, type GameRef } from '../../games/classic/types';
 import { AdSlot } from '../components/AdSlot';
 import { Countdown } from '../components/Countdown';
 import { RoundGlyph } from '../components/RoundGlyph';
 import { ShareBox } from '../components/ShareBox';
+import { WorldStanding } from '../components/WorldStanding';
+import type { Player } from '../../platform/player';
 import { useCountUp } from '../hooks';
 
 interface Props {
@@ -19,6 +21,10 @@ interface Props {
   onHome: () => void;
   onPractice: () => void;
   onDaily: () => void;
+  player: Player;
+  /** Answers of the daily game, when still stored on this device. */
+  answers: (AnyAnswer | null)[] | null;
+  onRename: (name: string) => void;
 }
 
 function ScoreRows({ scores }: { scores: number[] }) {
@@ -91,7 +97,7 @@ function PracticeResults({ scores, today, history, onHome, onPractice, onDaily }
   );
 }
 
-function DailyResults({ day, today, history, onHome, onPractice }: Props & { day: DayKey }) {
+function DailyResults({ day, today, history, onHome, onPractice, player, answers, onRename }: Props & { day: DayKey }) {
   const { t, num } = useI18n();
   const entry = history[day];
   const stats = useMemo(() => computeStats(history, today), [history, today]);
@@ -113,6 +119,8 @@ function DailyResults({ day, today, history, onHome, onPractice }: Props & { day
       <p className="kicker">{t('results.title', { n: entry.number })}</p>
       <Total total={entry.total} />
       <ScoreRows scores={entry.scores} />
+
+      <WorldStanding day={day} player={player} answers={answers} onRename={onRename} />
 
       <div className="compare">
         <div className="compare__item">

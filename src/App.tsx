@@ -1,14 +1,22 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { I18nProvider, createI18n, detectLang, useI18n, type Lang } from './i18n';
+import { I18nProvider, createI18n, detectLang, translate, useI18n, type Lang } from './i18n';
 import { toDayKey, type DayKey } from './platform/date';
 import { loadSettings, saveSettings, type Settings } from './platform/settings';
 import { createBrowserStore, isPersistentStorageAvailable } from './platform/storage';
 import { newPracticeId } from './games/classic/generator';
-import { findResumableDay, loadHistory, loadProgress } from './games/classic/persistence';
+import {
+  answersOf,
+  findResumableDay,
+  isFinished,
+  loadHistory,
+  loadPracticeHistory,
+  loadProgress,
+} from './games/classic/persistence';
+import { loadPlayer, savePlayerName, type Player } from './platform/player';
+import { BoardsScreen } from './ui/screens/BoardsScreen';
 import type { GameRef } from './games/classic/types';
 import { Header } from './ui/components/Header';
 import { HelpDialog } from './ui/components/HelpDialog';
-import { StatsDialog } from './ui/components/StatsDialog';
 import { usePrefersDark } from './ui/hooks';
 import { GameScreen } from './ui/screens/GameScreen';
 import { HomeScreen } from './ui/screens/HomeScreen';
@@ -17,7 +25,8 @@ import { ResultsScreen } from './ui/screens/ResultsScreen';
 type Screen =
   | { name: 'home' }
   | { name: 'game'; game: GameRef }
-  | { name: 'results'; game: GameRef; scores: number[] };
+  | { name: 'results'; game: GameRef; scores: number[] }
+  | { name: 'boards' };
 
 /** Current UTC day; re-renders only when the day actually changes. */
 function useToday(): DayKey {
@@ -33,12 +42,14 @@ export function App() {
   const store = useMemo(() => createBrowserStore(), []);
   const [settings, setSettings] = useState<Settings>(() => loadSettings(store));
   const [screen, setScreen] = useState<Screen>({ name: 'home' });
-  const [modal, setModal] = useState<'help' | 'stats' | null>(null);
+  const [modal, setModal] = useState<'help' | null>(null);
   const today = useToday();
   const prefersDark = usePrefersDark();
 
   const lang: Lang = settings.lang ?? detectLang(navigator.languages ?? [navigator.language]);
   const dark = settings.theme ? settings.theme === 'dark' : prefersDark;
+  const [player, setPlayer] = useState<Player>(() => loadPlayer(store, translate(lang, 'player.defaultName')));
+  const rename = (name: string) => setPlayer((p) => savePlayerName(store, p, name));
 
   const updateSettings = (patch: Partial<Settings>) => {
     const next = { ...settings, ...patch };
@@ -106,6 +117,13 @@ export function App() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const todayProgress = useMemo(() => loadProgress(store, today), [store, screen, today]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  const practiceHistory = useMemo(() => loadPracticeHistory(store), [store, screen]);
+  const dailyAnswers = useMemo(() => {
+    if (screen.name !== 'results' || screen.game.kind !== 'daily') return null;
+    const p = loadProgress(store, screen.game.day);
+    return p && isFinished(p) ? answersOf(p) : null;
+  }, [store, screen]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const resumableDay = useMemo(() => findResumableDay(store, today), [store, screen, today]);
 
   return (
@@ -115,7 +133,7 @@ export function App() {
           dark={dark}
           onHome={goHome}
           onHelp={() => setModal('help')}
-          onStats={() => setModal('stats')}
+          onStats={() => go({ name: 'boards' })}
           onToggleTheme={() => updateSettings({ theme: dark ? 'light' : 'dark' })}
           onLang={(l) => updateSettings({ lang: l })}
         />
@@ -150,12 +168,17 @@ export function App() {
             onHome={goHome}
             onPractice={playPractice}
             onDaily={() => playDaily(today)}
+            player={player}
+            answers={dailyAnswers}
+            onRename={rename}
           />
+        )}
+        {screen.name === 'boards' && (
+          <BoardsScreen today={today} player={player} history={history} practice={practiceHistory} />
         )}
 
         <Footer />
         <HelpDialog open={modal === 'help'} onClose={() => setModal(null)} />
-        <StatsDialog open={modal === 'stats'} onClose={() => setModal(null)} history={history} today={today} />
       </div>
     </I18nProvider>
   );

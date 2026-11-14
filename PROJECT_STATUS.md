@@ -1,11 +1,16 @@
 # Estado del proyecto — PerfectEye
 
-Última actualización: 2026-11-14 · Versión 1.0.0 (MVP)
+Última actualización: 2026-11-14 (ranking, temporizador) · Versión 1.0.0 (MVP)
 
 ## ✅ Funcionalidades completadas
 
 - **Las cinco pruebas** (Find the Center, Perfect Half, Angle Master, Equal Distance, Perfect Shape). Cada una tiene interacción táctil, de mouse y de teclado, muestra el resultado con la respuesta correcta, una línea de error animada, el puntaje de 0 a 100 y una explicación del error.
 - **Desafío diario determinista:** fecha UTC + ID del juego + semilla + generador pseudoaleatorio. Es el mismo desafío para todos, cambia a las 00:00 UTC y no requiere servidor ni IA.
+- **Temporizador de 60 segundos por prueba.** No se reinicia al recargar. Al terminar el tiempo cuenta lo que haya en el tablero, y sin respuesta vale 0.
+- **Ranking mundial del día** (servidor en Cloudflare Pages Functions + base D1, gratis). El servidor recalcula los puntajes a partir de las respuestas, el primer resultado del día es el definitivo y el nombre es editable.
+- **"Hoy en el mundo"** al terminar el desafío diario: en qué porcentaje de los jugadores estás, en total y por prueba, y tu puesto.
+- **Tablas de puntajes:** ranking de hoy (top 50 más tu posición), "Mis partidas" (todas, diarias y libres, ordenables por recientes o mejores) y estadísticas.
+- **Puntaje de Distancia igual más tolerante:** un error del 5% da 97 puntos (antes 84) y uno del 10% da 82 (antes 55).
 - **Juego libre:** partidas ilimitadas con desafíos nuevos cada vez. No cuentan en estadísticas ni rachas, y no se comparten. El desafío diario sigue siendo uno por día y es el que se comparte.
 - Contador hasta el próximo desafío, con la hora local equivalente a las 00:00 UTC.
 - Una partida empezada antes de medianoche conserva su desafío. Si quedó sin terminar, se puede completar al día siguiente.
@@ -26,15 +31,18 @@
 | Verificación | Resultado |
 |---|---|
 | Compilación de producción (`tsc` + `vite build`) | ✅ Sin errores. JS 87 KB comprimido, CSS 4,4 KB |
-| Pruebas unitarias (Vitest) | ✅ 81/81 |
+| Pruebas unitarias (Vitest) | ✅ 90/90 |
 | Fórmulas: perfecto = 100, rango 0–100, monotonía, valores de referencia | ✅ |
 | Mismo día → mismo desafío | ✅ |
 | 1000 días consecutivos → 1000 desafíos distintos (y cada prueba distinta por separado) | ✅ |
 | Figuras dentro del tablero, sin configuraciones triviales | ✅ (sobre 1000 días) |
 | Guardado y validación de datos (incluidos datos corruptos o manipulados) | ✅ |
 | No se puede puntuar dos veces (lógica y recarga real en el navegador) | ✅ |
-| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 70 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 86 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
 | Angle Master: el mismo ángulo armado hacia cualquier lado de la base da puntaje perfecto | ✅ (lógica y navegador) |
+| Ranking contra el servidor y la base de datos reales de Cloudflare (en modo local): envío, percentiles, cambio de nombre, top del día, primer resultado definitivo, rechazo de trampas | ✅ |
+| El juego sigue funcionando si el servidor del ranking no responde | ✅ |
+| Temporizador: cuenta regresiva, tiempo agotado con y sin respuesta, continúa tras recargar | ✅ |
 | Juego libre ilimitado sin afectar el desafío diario ni las estadísticas | ✅ |
 | Flechas sin hacer clic antes, Mayús para pasos finos, 1/2/3 en la forma | ✅ |
 | Partida completa, resultados, estadísticas | ✅ |
@@ -55,6 +63,7 @@
 
 ## ⏳ Pendiente
 
+- **Activar la base D1 del ranking** en Cloudflare (docs/DEPLOY.md, paso 2b).
 - **Publicar en Cloudflare Pages** (requiere tu cuenta de GitHub y de Cloudflare; ver docs/DEPLOY.md).
 - Probar en dispositivos reales (iPhone con Safari, Android con Chrome).
 - Decidir la fecha del desafío #1 (`LAUNCH_DAY`, hoy en 2026-11-12).
@@ -62,7 +71,12 @@
 
 ## 🐞 Errores conocidos / limitaciones
 
-- La integridad es solo local: quien sepa editar el almacenamiento del navegador o cambiar el reloj del dispositivo puede alterar sus propias estadísticas. No afecta a nadie más, porque no hay ranking global.
+- **Ranking:** evita puntajes inventados, porque el servidor los recalcula, pero no evita bots. El generador es público, así que alguien técnico podría calcular respuestas perfectas o crear muchos jugadores. Ver mejoras en docs/ARCHITECTURE.md.
+- El ranking solo se pudo probar con el servidor de Cloudflare **en modo local**. En internet funcionará cuando se active la base D1 (docs/DEPLOY.md, paso 2b).
+- El link de prueba privado dentro de Claude no tiene servidor, así que ahí "Hoy en el mundo" muestra que el ranking no está disponible.
+- El temporizador lo controla el navegador; el servidor no verifica el tiempo.
+
+- Estadísticas personales: quien sepa editar el almacenamiento del navegador puede alterar las suyas, pero eso no afecta al ranking mundial.
 - Las estadísticas viven solo en ese navegador. Si se borran los datos o se cambia de dispositivo, se pierden.
 - Juego visual: no se puede jugar por completo con un lector de pantalla. Sí se puede con el teclado.
 - En pantallas muy bajas (un celular en horizontal) puede hacer falta desplazarse para ver el botón.

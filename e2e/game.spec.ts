@@ -32,14 +32,17 @@ test('full game: five rounds, results, share text and stats', async ({ page }) =
   expect(share?.split('\n')).toHaveLength(9);
   await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=PERFECTEYE/);
 
-  await page.getByRole('button', { name: 'Statistics' }).click();
-  const dialog = page.getByRole('dialog');
-  await expect(dialog.locator('.stat-tile').first()).toContainText('1');
-  await expect(dialog.locator('.stat-tile').nth(1)).toContainText(String(total));
-  await dialog.getByRole('button', { name: 'Close' }).first().click();
+  // World standing: percentile overall and per test, computed by the server.
+  await expect(page.locator('.world__big')).toBeVisible();
+  await expect(page.locator('.world__rounds li')).toHaveCount(5);
+
+  await page.getByRole('button', { name: 'Scoreboards' }).click();
+  await page.getByRole('tab', { name: 'Statistics' }).click();
+  await expect(page.locator('.stat-tile').first()).toContainText('1');
+  await expect(page.locator('.stat-tile').nth(1)).toContainText(String(total));
 
   // Back home: the day is done and cannot be played again.
-  await page.getByRole('button', { name: 'Back to home' }).click();
+  await page.getByRole('button', { name: 'PerfectEye home' }).click();
   await expect(page.getByText(`You scored ${total}/500 today.`)).toBeVisible();
   await expect(page.getByRole('button', { name: "See today's results" })).toBeVisible();
   expect(errors).toEqual([]);
@@ -59,8 +62,13 @@ test('free play: unlimited games that do not touch daily stats', async ({ page }
   // Daily challenge is still untouched and playable.
   await page.getByRole('button', { name: 'Back to home' }).click();
   await expect(page.getByRole('button', { name: "Play today's challenge" })).toBeVisible();
-  await page.getByRole('button', { name: 'Statistics' }).click();
-  await expect(page.getByRole('dialog').locator('.stat-tile').first()).toContainText('0');
+  await page.getByRole('button', { name: 'Scoreboards' }).click();
+  await page.getByRole('tab', { name: 'Statistics' }).click();
+  await expect(page.locator('.stat-tile').first()).toContainText('0');
+  // ...but free play games are listed in "My games".
+  await page.getByRole('tab', { name: 'My games' }).click();
+  await expect(page.locator('.games__row')).toHaveCount(2);
+  await expect(page.locator('.games__row').first()).toContainText('Free play');
   expect(errors).toEqual([]);
 });
 
@@ -99,6 +107,74 @@ test('angle: the same opening built on either side scores (almost) perfect', asy
     const text = (await page.locator('.result .sr-only').textContent()) ?? '';
     expect(Number(/\d+/.exec(text)?.[0]), `side ${side}`).toBeGreaterThanOrEqual(95);
   }
+});
+
+test('each test has a 60-second timer; time out with no answer scores 0', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await expect(page.getByRole('timer')).toHaveText(/0:(60|59)/);
+  await page.clock.runFor(50_000);
+  await expect(page.getByRole('timer')).toHaveText(/0:1\d/);
+  await page.clock.runFor(11_000);
+  await expect(page.getByText("Time's up with no answer: 0 points.")).toBeVisible();
+  await expect(page.locator('.result .sr-only')).toContainText('0');
+  // With an answer on the board, it counts when time runs out.
+  await next(page);
+  await tapBoard(page, 0.5, 0.5);
+  await page.clock.runFor(61_000);
+  await expect(page.getByText(/^Time's up! Off by/)).toBeVisible();
+});
+
+test('the timer keeps running across reloads', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await page.clock.runFor(40_000);
+  await page.reload();
+  await page.getByRole('button', { name: "Continue today's challenge" }).click();
+  await expect(page.getByRole('timer')).toHaveText(/0:(19|20)/);
+});
+
+test('world ranking: name change, today worldwide and my games', async ({ page, browser }) => {
+  // Another player finishes first, so percentiles have someone to compare with.
+  const other = await browser.newPage();
+  await openAt(other, DAY_1);
+  await other.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(other);
+  await expect(other.locator('.world__big')).toBeVisible();
+  await other.close();
+
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(page);
+  await expect(page.locator('.world__big')).toContainText(/Better than \d+% of today’s players/);
+  await expect(page.locator('.world__rank')).toContainText(/of \d+ players/);
+
+  await page.getByRole('button', { name: 'Change' }).click();
+  await page.getByLabel('Your name in the ranking').fill('<bad>');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByText('That name can’t be used.', { exact: false })).toBeVisible();
+  const name = `Ana ${Math.floor(Math.random() * 9000) + 1000}`;
+  await page.getByLabel('Your name in the ranking').fill(name);
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.locator('.world__as')).toContainText(name);
+
+  await page.getByRole('button', { name: 'Scoreboards' }).click();
+  await expect(page.locator('.ranking__row.is-me').first()).toContainText(name);
+  await expect(page.locator('.boards__meta')).toContainText(/\d+ players today/);
+  await page.getByRole('tab', { name: 'My games' }).click();
+  await expect(page.locator('.games__row')).toHaveCount(1);
+  await expect(page.locator('.games__row')).toContainText('Daily #9');
+});
+
+test('without the ranking server the game still works', async ({ page }) => {
+  await page.route('**/api/**', (route) => route.fulfill({ status: 503, body: 'down' }));
+  const errors = await collectErrors(page);
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(page);
+  await expect(page.getByText('The world ranking isn’t available right now.', { exact: false })).toBeVisible();
+  await expect(page.getByTestId('share-text')).toContainText('PERFECTEYE #009');
+  expect(errors.filter((e) => !e.includes('503'))).toEqual([]);
 });
 
 test('copy to clipboard', async ({ page, context, browserName }) => {

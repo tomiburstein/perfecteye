@@ -16,5 +16,8 @@ export function challengeNumber(day: DayKey): number {
   return daysBetween(LAUNCH_DAY, day) + 1;
 }
 
+/** Time to answer each test, in milliseconds. */
+export const ROUND_TIME_MS = 60_000;
+
 /** How long memory rounds show their target, in milliseconds. */
 export const PREVIEW_MS = { angle: 3000, shape: 5000 } as const;
