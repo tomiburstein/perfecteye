@@ -26,14 +26,15 @@
 | Verificación | Resultado |
 |---|---|
 | Compilación de producción (`tsc` + `vite build`) | ✅ Sin errores. JS 87 KB comprimido, CSS 4,4 KB |
-| Pruebas unitarias (Vitest) | ✅ 80/80 |
+| Pruebas unitarias (Vitest) | ✅ 81/81 |
 | Fórmulas: perfecto = 100, rango 0–100, monotonía, valores de referencia | ✅ |
 | Mismo día → mismo desafío | ✅ |
 | 1000 días consecutivos → 1000 desafíos distintos (y cada prueba distinta por separado) | ✅ |
 | Figuras dentro del tablero, sin configuraciones triviales | ✅ (sobre 1000 días) |
 | Guardado y validación de datos (incluidos datos corruptos o manipulados) | ✅ |
 | No se puede puntuar dos veces (lógica y recarga real en el navegador) | ✅ |
-| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 66 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 70 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Angle Master: el mismo ángulo armado hacia cualquier lado de la base da puntaje perfecto | ✅ (lógica y navegador) |
 | Juego libre ilimitado sin afectar el desafío diario ni las estadísticas | ✅ |
 | Flechas sin hacer clic antes, Mayús para pasos finos, 1/2/3 en la forma | ✅ |
 | Partida completa, resultados, estadísticas | ✅ |

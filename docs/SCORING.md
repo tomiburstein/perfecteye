@@ -23,7 +23,7 @@ Todo se mide en **unidades del tablero** (el tablero mide 1000×1000 sin importa
 |---|---|---|---|
 | 🎯 Find the Center | distancia al centro ÷ radio del círculo | 1 % | +10 % |
 | 📏 Perfect Half | \|posición − 0,5\| como fracción del largo de la línea | 0,5 % | +5 % |
-| 📐 Angle Master | diferencia angular en grados (circular, 0–180) | 1° | +12° |
+| 📐 Angle Master | diferencia en grados entre la apertura construida y la objetivo (vale hacia cualquier lado de la base) | 1° | +12° |
 | 📍 Equal Distance | \|BC − AB\| ÷ AB | 1 % | +10 % |
 | 🔺 Perfect Shape | distancia media entre vértices ÷ tamaño del tablero, usando la mejor correspondencia entre vértices (se prueban las 6 posibles) | 0,8 % | +7 % |
 

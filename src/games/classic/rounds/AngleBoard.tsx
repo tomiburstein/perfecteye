@@ -34,6 +34,12 @@ export function AngleBoard({ challenge, mode, answer, onChange, onSubmit }: Roun
 
   const userDir = answer ? base + answer.deg : null;
   const userEnd = userDir !== null ? polar(vertex, userDir, rayLength) : null;
+  // Which side of the base the player opened the angle on (either is valid).
+  const clockwise = answer ? normDeg(answer.deg) > 180 : false;
+  const targetDir = clockwise ? base - targetDeg : base + targetDeg;
+  /** Arc between the base and a direction, always drawn through the opening. */
+  const openingArc = (r: number, dir: number) =>
+    normDeg(dir - base) <= 180 ? arcPath(vertex, r, base, dir) : arcPath(vertex, r, dir, base);
 
   return (
     <Board
@@ -57,13 +63,13 @@ export function AngleBoard({ challenge, mode, answer, onChange, onSubmit }: Roun
       )}
       {mode === 'result' && (
         <g className="pop">
-          <path className="target-arc" d={arcPath(vertex, 130, base, base + targetDeg)} />
-          {ray(base + targetDeg, 'target-stroke target-dash')}
+          <path className="target-arc" d={openingArc(130, targetDir)} />
+          {ray(targetDir, 'target-stroke target-dash')}
         </g>
       )}
       {userEnd && userDir !== null && mode !== 'preview' && (
         <g className="mk-user">
-          <path className="arc-user" d={arcPath(vertex, 90, base, userDir)} />
+          <path className="arc-user" d={openingArc(90, userDir)} />
           {ray(userDir, 'mk__ray')}
           <circle className="mk__halo" cx={userEnd.x} cy={userEnd.y} r="38" />
           <circle className="mk__ring" cx={userEnd.x} cy={userEnd.y} r="16" />

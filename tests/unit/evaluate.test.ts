@@ -27,9 +27,27 @@ describe('evaluateRound', () => {
     expect(evaluateRound(c, 'half', { t: 0.47 }).score).toBe(evaluateRound(c, 'half', { t: 0.53 }).score);
   });
 
-  it('angle: uses circular difference', () => {
-    const r = evaluateRound(c, 'angle', { deg: (c.angle.targetDeg + 350) % 360 });
-    expect(r.error).toBeCloseTo(10, 8);
+  it('angle: compares the opening, on either side of the base', () => {
+    const target = c.angle.targetDeg;
+    expect(evaluateRound(c, 'angle', { deg: target - 10 }).error).toBeCloseTo(10, 8);
+    expect(evaluateRound(c, 'angle', { deg: target + 10 }).error).toBeCloseTo(10, 8);
+    // Same opening built clockwise (mirrored) is a perfect answer.
+    expect(evaluateRound(c, 'angle', { deg: 360 - target }).score).toBe(100);
+    expect(evaluateRound(c, 'angle', { deg: 360 - target - 5 }).error).toBeCloseTo(5, 8);
+    expect(evaluateRound(c, 'angle', { deg: 360 - target }).details.yours).toBeCloseTo(target, 8);
+  });
+
+  it('angle: a wider opening never scores better than a closer one', () => {
+    const target = c.angle.targetDeg;
+    let prev = 101;
+    for (let d = 0; d <= 180 - target; d += 0.5) {
+      const s = Math.min(
+        evaluateRound(c, 'angle', { deg: target + d }).score,
+        evaluateRound(c, 'angle', { deg: 360 - target - d }).score,
+      );
+      expect(s).toBeLessThanOrEqual(prev);
+      prev = s;
+    }
   });
 
   it('distance: signed difference is reported', () => {

@@ -1,4 +1,4 @@
-import { BOARD_SIZE, angleDiff, dist, isFinitePoint, normDeg, polar } from '../../platform/geometry';
+import { BOARD_SIZE, dist, isFinitePoint, normDeg, polar } from '../../platform/geometry';
 import { scoreRound } from './scoring';
 import type {
   AnswerMap,
@@ -8,6 +8,16 @@ import type {
   RoundResult,
   Triangle,
 } from './types';
+
+/**
+ * Opening of the angle the player built, in [0, 180]. The answer is stored
+ * counter-clockwise from the base ray, but an angle is the same opening on
+ * either side of the base, so 300° counter-clockwise = 60° clockwise = 60°.
+ */
+export function angleOpening(deg: number): number {
+  const d = normDeg(deg);
+  return d > 180 ? 360 - d : d;
+}
 
 /** C's position for a given distance along the track. */
 export function distancePointC(ch: DistanceChallenge, distance: number) {
@@ -62,11 +72,12 @@ export function evaluateRound<K extends RoundId>(
     }
     case 'angle': {
       const a = answer as AnswerMap['angle'];
-      const error = angleDiff(a.deg, challenge.angle.targetDeg);
+      const yours = angleOpening(a.deg);
+      const error = Math.abs(yours - challenge.angle.targetDeg);
       return {
         score: scoreRound('angle', error),
         error,
-        details: { target: challenge.angle.targetDeg, yours: normDeg(a.deg) },
+        details: { target: challenge.angle.targetDeg, yours },
       };
     }
     case 'distance': {

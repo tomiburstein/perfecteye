@@ -53,9 +53,9 @@ export const en = {
   'round.angle.name': 'Angle Master',
   'round.angle.short': 'Angle',
   'round.angle.summary': 'Memorise an angle, then rebuild it.',
-  'round.angle.ready': 'An angle will appear for 3 seconds. Memorise how wide it opens.',
+  'round.angle.ready': 'An angle will appear for 3 seconds. Memorise how wide it opens: you will rebuild it from a rotated base line.',
   'round.angle.instructions':
-    'Rebuild the same opening from the new base line. Drag to rotate the free line.',
+    'The base is rotated: open the same angle, to either side. Drag to rotate the line.',
   'round.angle.board': 'Angle builder. Drag or use the arrow keys to rotate the free line.',
   'round.angle.error': 'Target {target}° · yours {yours}° · {err}° off',
 

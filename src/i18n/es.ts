@@ -55,9 +55,9 @@ export const es: Messages = {
   'round.angle.name': 'Maestro del ángulo',
   'round.angle.short': 'Ángulo',
   'round.angle.summary': 'Memoriza un ángulo y reconstrúyelo.',
-  'round.angle.ready': 'Verás un ángulo 3 segundos. Memoriza cuánto se abre.',
+  'round.angle.ready': 'Verás un ángulo 3 segundos. Memoriza cuánto se abre: lo reconstruirás desde una base girada.',
   'round.angle.instructions':
-    'Reproduce la misma apertura desde la nueva línea base. Arrastra para girar la línea.',
+    'La base está girada: abre el mismo ángulo, hacia cualquier lado. Arrastra para girar.',
   'round.angle.board':
     'Constructor de ángulos. Arrastra o usa las flechas del teclado para girar la línea libre.',
   'round.angle.error': 'Objetivo {target}° · el tuyo {yours}° · {err}° de error',

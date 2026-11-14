@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { generateDailyChallenge } from '../src/games/classic/generator';
+import { polar } from '../src/platform/geometry';
 import { DAY_1, collectErrors, next, openAt, playRound, playWholeGame, tapBoard } from './helpers';
 
 test('home screen shows the daily challenge without console errors', async ({ page }) => {
@@ -69,6 +71,34 @@ test('after the daily challenge you can keep playing in free play', async ({ pag
   await page.getByRole('button', { name: /Play again/ }).click();
   await expect(page.getByRole('heading', { name: /Find the Center/ })).toBeVisible();
   await expect(page.getByText('Free play').first()).toBeVisible();
+});
+
+test('angle: the same opening built on either side scores (almost) perfect', async ({ page }) => {
+  const c = generateDailyChallenge('2026-11-20').angle;
+  for (const side of [1, -1]) {
+    await page.goto('about:blank');
+    await page.evaluate(() => localStorage.clear()).catch(() => {});
+    await openAt(page, DAY_1);
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.getByRole('button', { name: "Play today's challenge" }).click();
+    await playRound(page);
+    await next(page);
+    await playRound(page);
+    await next(page);
+    await page.getByRole('button', { name: 'Show me' }).click();
+    await page.clock.runFor(3500);
+    const box = (await page.locator('svg.board').boundingBox())!;
+    const p = polar(c.vertex, c.inputBaseDeg + side * c.targetDeg, 330);
+    const x = box.x + (p.x / 1000) * box.width;
+    const y = box.y + (p.y / 1000) * box.height;
+    const hasTouch = await page.evaluate(() => navigator.maxTouchPoints > 0);
+    if (hasTouch) await page.touchscreen.tap(x, y);
+    else await page.mouse.click(x, y);
+    await page.getByRole('button', { name: 'Confirm' }).click();
+    const text = (await page.locator('.result .sr-only').textContent()) ?? '';
+    expect(Number(/\d+/.exec(text)?.[0]), `side ${side}`).toBeGreaterThanOrEqual(95);
+  }
 });
 
 test('copy to clipboard', async ({ page, context, browserName }) => {
