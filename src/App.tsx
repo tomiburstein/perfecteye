@@ -3,7 +3,9 @@ import { I18nProvider, createI18n, detectLang, useI18n, type Lang } from './i18n
 import { toDayKey, type DayKey } from './platform/date';
 import { loadSettings, saveSettings, type Settings } from './platform/settings';
 import { createBrowserStore, isPersistentStorageAvailable } from './platform/storage';
+import { newPracticeId } from './games/classic/generator';
 import { findResumableDay, loadHistory, loadProgress } from './games/classic/persistence';
+import type { GameRef } from './games/classic/types';
 import { Header } from './ui/components/Header';
 import { HelpDialog } from './ui/components/HelpDialog';
 import { StatsDialog } from './ui/components/StatsDialog';
@@ -12,7 +14,10 @@ import { GameScreen } from './ui/screens/GameScreen';
 import { HomeScreen } from './ui/screens/HomeScreen';
 import { ResultsScreen } from './ui/screens/ResultsScreen';
 
-type Screen = { name: 'home' } | { name: 'game'; day: DayKey } | { name: 'results'; day: DayKey };
+type Screen =
+  | { name: 'home' }
+  | { name: 'game'; game: GameRef }
+  | { name: 'results'; game: GameRef; scores: number[] };
 
 /** Current UTC day; re-renders only when the day actually changes. */
 function useToday(): DayKey {
@@ -85,7 +90,15 @@ export function App() {
     else setScreen({ name: 'home' });
   }, []);
 
-  const onFinish = useCallback((day: DayKey) => go({ name: 'results', day }), [go]);
+  const onFinish = useCallback(
+    (game: GameRef, scores: number[]) => go({ name: 'results', game, scores }),
+    [go],
+  );
+  const playDaily = useCallback((day: DayKey) => go({ name: 'game', game: { kind: 'daily', day } }), [go]);
+  const playPractice = useCallback(
+    () => go({ name: 'game', game: { kind: 'practice', id: newPracticeId(), day: toDayKey(new Date()) } }),
+    [go],
+  );
 
   // Fresh reads from storage whenever the screen or the day changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,15 +127,30 @@ export function App() {
             history={history}
             todayProgress={todayProgress}
             resumableDay={resumableDay}
-            onPlay={(day) => go({ name: 'game', day })}
-            onResults={(day) => go({ name: 'results', day })}
+            onPlay={playDaily}
+            onPractice={playPractice}
+            onResults={(day) => go({ name: 'results', game: { kind: 'daily', day }, scores: history[day]?.scores ?? [] })}
           />
         )}
         {screen.name === 'game' && (
-          <GameScreen key={screen.day} day={screen.day} store={store} onFinish={onFinish} onExit={goHome} />
+          <GameScreen
+            key={screen.game.kind === 'daily' ? screen.game.day : screen.game.id}
+            game={screen.game}
+            store={store}
+            onFinish={onFinish}
+            onExit={goHome}
+          />
         )}
         {screen.name === 'results' && (
-          <ResultsScreen day={screen.day} today={today} history={history} onHome={goHome} />
+          <ResultsScreen
+            game={screen.game}
+            scores={screen.scores}
+            today={today}
+            history={history}
+            onHome={goHome}
+            onPractice={playPractice}
+            onDaily={() => playDaily(today)}
+          />
         )}
 
         <Footer />

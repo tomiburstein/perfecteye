@@ -24,6 +24,7 @@ export function HelpDialog({ open, onClose }: { open: boolean; onClose: () => vo
         <p>{t('help.how')}</p>
         <p>{t('help.memory')}</p>
         <p>{t('help.daily', { local })}</p>
+        <p>{t('help.practice')}</p>
         <p>{t('help.scoring')}</p>
         <p>{t('help.privacy')}</p>
         <p className="fineprint">{t('help.accessibility')}</p>

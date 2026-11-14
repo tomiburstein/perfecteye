@@ -24,6 +24,14 @@ export const en = {
   'home.resume': 'You have an unfinished challenge #{n} from yesterday.',
   'home.resumeCta': 'Finish it',
   'home.testsTitle': 'The five tests',
+  'home.practice': 'Free play',
+  'home.practiceDesc': 'Unlimited new puzzles, any time. They don’t count towards your stats or streak.',
+  'home.practiceCta': 'Play free',
+  'mode.practice': 'Free play',
+  'results.practiceTitle': 'Free play',
+  'results.playAgain': 'Play again',
+  'results.practiceNote': 'Free play games don’t count towards your stats or streak. The daily challenge is the one you can share.',
+  'results.toDaily': "Play today's challenge",
   'home.nextIn': 'Next challenge in',
   'home.resetInfo': 'A new challenge is released every day at 00:00 UTC ({local} your time).',
 
@@ -142,6 +150,8 @@ export const en = {
     'Angle Master and Perfect Shape show their figure only once. Reloading the page will not show it again.',
   'help.daily':
     'Everyone in the world plays the same challenge. It changes every day at 00:00 UTC ({local} your time).',
+  'help.practice':
+    'Want more? Free play gives you new puzzles as often as you like. Only the daily challenge counts for your stats and streak.',
   'help.scoring':
     'Your score depends only on how far your answer is from the correct one, measured relative to the figure, so it is fair on any screen.',
   'help.privacy':

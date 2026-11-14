@@ -13,6 +13,7 @@ interface Props {
   todayProgress: GameProgress | null;
   resumableDay: DayKey | null;
   onPlay: (day: DayKey) => void;
+  onPractice: () => void;
   onResults: (day: DayKey) => void;
 }
 
@@ -26,7 +27,7 @@ function NoteArrow() {
   );
 }
 
-export function HomeScreen({ today, history, todayProgress, resumableDay, onPlay, onResults }: Props) {
+export function HomeScreen({ today, history, todayProgress, resumableDay, onPlay, onPractice, onResults }: Props) {
   const { t, lang } = useI18n();
   const resetLocal = useLocalResetTime();
   const done = history[today];
@@ -77,6 +78,18 @@ export function HomeScreen({ today, history, todayProgress, resumableDay, onPlay
             </span>
           </p>
         </div>
+      </section>
+
+      <section className="practice" aria-labelledby="practice-title">
+        <div className="practice__text">
+          <h2 id="practice-title" className="practice__title">
+            {t('home.practice')}
+          </h2>
+          <p>{t('home.practiceDesc')}</p>
+        </div>
+        <button className="btn btn--ghost" onClick={onPractice}>
+          {t('home.practiceCta')}
+        </button>
       </section>
 
       <section className="tests" aria-labelledby="tests-title">

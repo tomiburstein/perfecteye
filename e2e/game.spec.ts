@@ -43,6 +43,34 @@ test('full game: five rounds, results, share text and stats', async ({ page }) =
   expect(errors).toEqual([]);
 });
 
+test('free play: unlimited games that do not touch daily stats', async ({ page }) => {
+  const errors = await collectErrors(page);
+  await openAt(page, DAY_1);
+  for (let game = 0; game < 2; game++) {
+    if (game === 0) await page.getByRole('button', { name: 'Play free' }).click();
+    else await page.getByRole('button', { name: 'Play again' }).click();
+    await expect(page.getByText('Free play').first()).toBeVisible();
+    await playWholeGame(page);
+    await expect(page.getByRole('heading', { name: /Total score: \d+\/500/ })).toBeAttached();
+    await expect(page.getByText(/don’t count towards your stats/)).toBeVisible();
+  }
+  // Daily challenge is still untouched and playable.
+  await page.getByRole('button', { name: 'Back to home' }).click();
+  await expect(page.getByRole('button', { name: "Play today's challenge" })).toBeVisible();
+  await page.getByRole('button', { name: 'Statistics' }).click();
+  await expect(page.getByRole('dialog').locator('.stat-tile').first()).toContainText('0');
+  expect(errors).toEqual([]);
+});
+
+test('after the daily challenge you can keep playing in free play', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(page);
+  await page.getByRole('button', { name: /Play again/ }).click();
+  await expect(page.getByRole('heading', { name: /Find the Center/ })).toBeVisible();
+  await expect(page.getByText('Free play').first()).toBeVisible();
+});
+
 test('copy to clipboard', async ({ page, context, browserName }) => {
   test.skip(browserName !== 'chromium');
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);

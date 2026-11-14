@@ -99,3 +99,6 @@ export interface RoundResult {
   /** Extra numbers used to explain the result to the player. */
   details: Record<string, number>;
 }
+
+/** Which game is being played: the official daily challenge or a free-play one. */
+export type GameRef = { kind: 'daily'; day: DayKey } | { kind: 'practice'; id: string; day: DayKey };

@@ -1,29 +1,98 @@
 import { useMemo } from 'react';
 import { useI18n } from '../../i18n';
 import type { DayKey } from '../../platform/date';
-import type { History } from '../../games/classic/persistence';
 import { gradeKey } from '../../games/classic/describe';
+import type { History } from '../../games/classic/persistence';
 import { computeStats } from '../../games/classic/stats';
-import { MAX_TOTAL_SCORE, ROUND_IDS } from '../../games/classic/types';
+import { MAX_TOTAL_SCORE, ROUND_IDS, type GameRef } from '../../games/classic/types';
 import { AdSlot } from '../components/AdSlot';
 import { Countdown } from '../components/Countdown';
 import { RoundGlyph } from '../components/RoundGlyph';
 import { ShareBox } from '../components/ShareBox';
 import { useCountUp } from '../hooks';
 
-export function ResultsScreen({
-  day,
-  today,
-  history,
-  onHome,
-}: {
-  day: DayKey;
+interface Props {
+  game: GameRef;
+  scores: number[];
   today: DayKey;
   history: History;
   onHome: () => void;
-}) {
-  const i18n = useI18n();
-  const { t, num } = i18n;
+  onPractice: () => void;
+  onDaily: () => void;
+}
+
+function ScoreRows({ scores }: { scores: number[] }) {
+  const { t } = useI18n();
+  return (
+    <ul className="rows">
+      {ROUND_IDS.map((id, i) => (
+        <li key={id} className="row" style={{ animationDelay: `${i * 60}ms` }}>
+          <span className="row__name">
+            <RoundGlyph id={id} size={22} /> <span>{t(`round.${id}.name`)}</span>
+          </span>
+          <span className="row__bar" aria-hidden="true">
+            <span style={{ width: `${scores[i]}%` }} />
+          </span>
+          <span className="row__score">{scores[i]}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function Total({ total }: { total: number }) {
+  const { t } = useI18n();
+  const shown = useCountUp(total, 900);
+  return (
+    <>
+      <h1 id="results-title" className="sr-only">
+        {t('results.total')}: {total}/{MAX_TOTAL_SCORE}
+      </h1>
+      <div className="total" aria-hidden="true">
+        <span className="total__num">{shown}</span>
+        <span className="total__max">/{MAX_TOTAL_SCORE}</span>
+      </div>
+      <p className="total__label">
+        {t('results.total')} ·{' '}
+        <span className="hand total__remark">{t(gradeKey(Math.round(total / 5)))}</span>
+      </p>
+    </>
+  );
+}
+
+export function ResultsScreen(props: Props) {
+  return props.game.kind === 'daily' ? <DailyResults {...props} day={props.game.day} /> : <PracticeResults {...props} />;
+}
+
+function PracticeResults({ scores, today, history, onHome, onPractice, onDaily }: Props) {
+  const { t } = useI18n();
+  const total = scores.reduce((a, b) => a + b, 0);
+  const dailyDone = Boolean(history[today]);
+  return (
+    <main className="screen results" aria-labelledby="results-title">
+      <p className="kicker">{t('results.practiceTitle')}</p>
+      <Total total={total} />
+      <ScoreRows scores={scores} />
+      <div className="results__actions">
+        <button className="btn btn--primary btn--lg btn--block" onClick={onPractice}>
+          {t('results.playAgain')}
+        </button>
+        {!dailyDone && (
+          <button className="btn btn--ghost btn--block" onClick={onDaily}>
+            {t('results.toDaily')}
+          </button>
+        )}
+        <button className="btn btn--ghost btn--block" onClick={onHome}>
+          {t('results.home')}
+        </button>
+      </div>
+      <p className="fineprint">{t('results.practiceNote')}</p>
+    </main>
+  );
+}
+
+function DailyResults({ day, today, history, onHome, onPractice }: Props & { day: DayKey }) {
+  const { t, num } = useI18n();
   const entry = history[day];
   const stats = useMemo(() => computeStats(history, today), [history, today]);
   const previous = useMemo(() => {
@@ -34,52 +103,26 @@ export function ResultsScreen({
       best: Math.max(...others.map((e) => e.total)),
     };
   }, [history, day]);
-  const shownTotal = useCountUp(entry?.total ?? 0, 900);
 
   if (!entry) return null;
 
   const diff = previous ? entry.total - previous.average : 0;
-  const streak = stats.currentStreak;
 
   return (
     <main className="screen results" aria-labelledby="results-title">
       <p className="kicker">{t('results.title', { n: entry.number })}</p>
-      <h1 id="results-title" className="sr-only">
-        {t('results.total')}: {entry.total}/{MAX_TOTAL_SCORE}
-      </h1>
-      <div className="total" aria-hidden="true">
-        <span className="total__num">{shownTotal}</span>
-        <span className="total__max">/{MAX_TOTAL_SCORE}</span>
-      </div>
-      <p className="total__label">
-        {t('results.total')} · <span className="hand total__remark">{t(gradeKey(Math.round(entry.total / 5)))}</span>
-      </p>
-
-      <ul className="rows">
-        {ROUND_IDS.map((id, i) => (
-          <li key={id} className="row" style={{ animationDelay: `${i * 60}ms` }}>
-            <span className="row__name">
-              <RoundGlyph id={id} size={22} /> <span>{t(`round.${id}.name`)}</span>
-            </span>
-            <span className="row__bar" aria-hidden="true">
-              <span style={{ width: `${entry.scores[i]}%` }} />
-            </span>
-            <span className="row__score">{entry.scores[i]}</span>
-          </li>
-        ))}
-      </ul>
+      <Total total={entry.total} />
+      <ScoreRows scores={entry.scores} />
 
       <div className="compare">
         <div className="compare__item">
-          <span className="compare__value">{streak}</span>
+          <span className="compare__value">{stats.currentStreak}</span>
           <span className="compare__label">{t('results.streak')}</span>
         </div>
         <div className="compare__text">
           {!previous && <p>{t('results.firstGame')}</p>}
           {previous && entry.total > previous.best && <p className="accent">{t('results.newBest')}</p>}
-          {previous && entry.total <= previous.best && (
-            <p>{t('results.best', { best: previous.best })}</p>
-          )}
+          {previous && entry.total <= previous.best && <p>{t('results.best', { best: previous.best })}</p>}
           {previous && (
             <p>
               {t('results.vsAverage', {
@@ -95,9 +138,14 @@ export function ResultsScreen({
 
       <Countdown />
       <AdSlot placement="results" />
-      <button className="btn btn--ghost btn--block" onClick={onHome}>
-        {t('results.home')}
-      </button>
+      <div className="results__actions">
+        <button className="btn btn--primary btn--block" onClick={onPractice}>
+          {t('results.playAgain')} · {t('mode.practice')}
+        </button>
+        <button className="btn btn--ghost btn--block" onClick={onHome}>
+          {t('results.home')}
+        </button>
+      </div>
     </main>
   );
 }

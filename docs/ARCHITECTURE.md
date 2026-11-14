@@ -36,7 +36,8 @@ public/                Íconos, manifest, cabeceras de seguridad (_headers)
 1. La "clave del día" es la fecha **UTC** (`2026-11-20`). Cambia a las 00:00 UTC para todo el mundo.
 2. Cada prueba usa la semilla `perfecteye-classic:v1:<día>:<prueba>`, que alimenta un generador pseudoaleatorio determinista. El mismo día produce exactamente el mismo desafío en cualquier dispositivo.
 3. Las coordenadas generadas se redondean a 0,1 unidades para que todos los navegadores den el mismo resultado.
-4. El número del desafío se calcula como los días transcurridos desde `LAUNCH_DAY` + 1.
+4. El **juego libre** usa la semilla `perfecteye-classic:v1:practice-<id aleatorio>:<prueba>`. Sus partidas no se guardan ni cuentan en las estadísticas.
+5. El número del desafío se calcula como los días transcurridos desde `LAUNCH_DAY` + 1.
 
 **No cambies `GENERATOR_VERSION` ni la lógica de `generator.ts` después del lanzamiento** salvo que sea intencional: cambiaría los desafíos de todos (la prueba de snapshot avisará).
 

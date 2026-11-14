@@ -4,7 +4,7 @@ import type { DayKey } from '../../platform/date';
 import type { KeyValueStore } from '../../platform/storage';
 import { describeError, gradeKey } from '../../games/classic/describe';
 import { evaluateRound } from '../../games/classic/evaluate';
-import { generateDailyChallenge } from '../../games/classic/generator';
+import { generateDailyChallenge, generatePracticeChallenge } from '../../games/classic/generator';
 import {
   confirmRound,
   currentRoundIndex,
@@ -14,6 +14,7 @@ import {
   newProgress,
   recordFinished,
   saveProgress,
+  scoresFor,
   type GameProgress,
 } from '../../games/classic/persistence';
 import { ROUNDS, type RoundMode } from '../../games/classic/rounds';
@@ -22,6 +23,7 @@ import {
   ROUND_IDS,
   type AnswerMap,
   type DailyChallenge,
+  type GameRef,
   type RoundId,
 } from '../../games/classic/types';
 import { useCountUp } from '../hooks';
@@ -29,26 +31,34 @@ import { BackIcon } from '../components/Icons';
 import { RoundGlyph } from '../components/RoundGlyph';
 
 interface Props {
-  day: DayKey;
+  game: GameRef;
   store: KeyValueStore;
-  onFinish: (day: DayKey) => void;
+  onFinish: (game: GameRef, scores: number[]) => void;
   onExit: () => void;
 }
 
-export function GameScreen({ day, store, onFinish, onExit }: Props) {
+export function GameScreen({ game, store, onFinish, onExit }: Props) {
   const { t } = useI18n();
-  // The day is fixed for the whole game, even if midnight UTC passes.
-  const challenge = useMemo(() => generateDailyChallenge(day), [day]);
+  const daily = game.kind === 'daily';
+  const day: DayKey = game.day;
+  // The game is fixed for its whole duration, even if midnight UTC passes.
+  const challenge = useMemo(
+    () => (game.kind === 'daily' ? generateDailyChallenge(game.day) : generatePracticeChallenge(game.id, game.day)),
+    [game],
+  );
+  // Only the daily challenge is saved: free play is unlimited and never counted.
   const [progress, setProgress] = useState<GameProgress>(
-    () => loadProgress(store, day) ?? newProgress(day, Date.now()),
+    () => (daily ? loadProgress(store, day) : null) ?? newProgress(day, Date.now()),
   );
   const [view, setView] = useState(() => currentRoundIndex(progress));
 
-  useEffect(() => saveProgress(store, progress), [store, progress]);
+  useEffect(() => {
+    if (daily) saveProgress(store, progress);
+  }, [daily, store, progress]);
 
   useEffect(() => {
-    if (view >= ROUND_COUNT && isFinished(progress)) onFinish(day);
-  }, [view, progress, day, onFinish]);
+    if (view >= ROUND_COUNT && isFinished(progress)) onFinish(game, scoresFor(challenge, progress) as number[]);
+  }, [view, progress, game, challenge, onFinish]);
 
   if (view >= ROUND_COUNT) return null;
 
@@ -56,7 +66,7 @@ export function GameScreen({ day, store, onFinish, onExit }: Props) {
 
   const update = (next: GameProgress) => {
     setProgress(next);
-    saveProgress(store, next); // write immediately: a reload must not allow a retry
+    if (daily) saveProgress(store, next); // write immediately: a reload must not allow a retry
   };
 
   return (
@@ -77,6 +87,7 @@ export function GameScreen({ day, store, onFinish, onExit }: Props) {
           {view + 1}/{ROUND_COUNT}
         </span>
       </div>
+      {!daily && <p className="mode-tag hand">{t('mode.practice')}</p>}
       <RoundStage
         key={view}
         id={id}
@@ -88,7 +99,7 @@ export function GameScreen({ day, store, onFinish, onExit }: Props) {
           const next = confirmRound(progress, view, answer, Date.now());
           if (!next) return;
           update(next);
-          if (isFinished(next)) recordFinished(store, next, Date.now());
+          if (daily && isFinished(next)) recordFinished(store, next, Date.now());
         }}
         onNext={() => setView(view + 1)}
         isLast={view === ROUND_COUNT - 1}

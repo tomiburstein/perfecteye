@@ -100,3 +100,24 @@ describe('daily challenge generation', () => {
     }
   });
 });
+
+describe('free play challenges', () => {
+  it('are reproducible for an id and different between ids', async () => {
+    const { generatePracticeChallenge, newPracticeId } = await import('../../src/games/classic/generator');
+    const a = generatePracticeChallenge('abc123', '2026-11-14');
+    expect(generatePracticeChallenge('abc123', '2026-11-14')).toEqual(a);
+    const ids = new Set(Array.from({ length: 200 }, () => newPracticeId()));
+    expect(ids.size).toBe(200);
+    const prints = new Set(
+      [...ids].map((id) => fingerprint(generatePracticeChallenge(id, '2026-11-14'))),
+    );
+    expect(prints.size).toBe(200);
+  });
+
+  it('never equal the daily challenge of the same day', async () => {
+    const { generatePracticeChallenge } = await import('../../src/games/classic/generator');
+    const p = generatePracticeChallenge('0000', '2026-11-14');
+    expect(fingerprint(p)).not.toBe(fingerprint(generateDailyChallenge('2026-11-14')));
+    expect(p.number).toBe(0);
+  });
+});

@@ -1,11 +1,12 @@
 # Estado del proyecto — PerfectEye
 
-Última actualización: 2026-11-13 · Versión 1.0.0 (MVP)
+Última actualización: 2026-11-14 · Versión 1.0.0 (MVP)
 
 ## ✅ Funcionalidades completadas
 
 - **Las cinco pruebas** (Find the Center, Perfect Half, Angle Master, Equal Distance, Perfect Shape). Cada una tiene interacción táctil, de mouse y de teclado, muestra el resultado con la respuesta correcta, una línea de error animada, el puntaje de 0 a 100 y una explicación del error.
 - **Desafío diario determinista:** fecha UTC + ID del juego + semilla + generador pseudoaleatorio. Es el mismo desafío para todos, cambia a las 00:00 UTC y no requiere servidor ni IA.
+- **Juego libre:** partidas ilimitadas con desafíos nuevos cada vez. No cuentan en estadísticas ni rachas, y no se comparten. El desafío diario sigue siendo uno por día y es el que se comparte.
 - Contador hasta el próximo desafío, con la hora local equivalente a las 00:00 UTC.
 - Una partida empezada antes de medianoche conserva su desafío. Si quedó sin terminar, se puede completar al día siguiente.
 - **No se puede puntuar dos veces:** cada respuesta se guarda al confirmarla, y las figuras de memoria se muestran una sola vez, aunque se recargue la página.
@@ -25,14 +26,15 @@
 | Verificación | Resultado |
 |---|---|
 | Compilación de producción (`tsc` + `vite build`) | ✅ Sin errores. JS 87 KB comprimido, CSS 4,4 KB |
-| Pruebas unitarias (Vitest) | ✅ 78/78 |
+| Pruebas unitarias (Vitest) | ✅ 80/80 |
 | Fórmulas: perfecto = 100, rango 0–100, monotonía, valores de referencia | ✅ |
 | Mismo día → mismo desafío | ✅ |
 | 1000 días consecutivos → 1000 desafíos distintos (y cada prueba distinta por separado) | ✅ |
 | Figuras dentro del tablero, sin configuraciones triviales | ✅ (sobre 1000 días) |
 | Guardado y validación de datos (incluidos datos corruptos o manipulados) | ✅ |
 | No se puede puntuar dos veces (lógica y recarga real en el navegador) | ✅ |
-| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 58 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 66 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Juego libre ilimitado sin afectar el desafío diario ni las estadísticas | ✅ |
 | Flechas sin hacer clic antes, Mayús para pasos finos, 1/2/3 en la forma | ✅ |
 | Partida completa, resultados, estadísticas | ✅ |
 | Diseño: sin scroll horizontal, tablero cuadrado y botón visible en las 5 pruebas, en ambos idiomas | ✅ |

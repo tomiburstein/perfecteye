@@ -10,7 +10,7 @@
 | 📍 | Equal Distance | Deslizar C para que B–C mida lo mismo que A–B |
 | 🔺 | Perfect Shape | Memorizar un triángulo (5 s) y redibujarlo |
 
-Cada prueba vale hasta 100 puntos, con un máximo de 500 por día. El desafío cambia todos los días a las **00:00 UTC**. No hace falta registrarse, y funciona en celulares, tablets y computadoras, en inglés y en español.
+Cada prueba vale hasta 100 puntos, con un máximo de 500 por día. Además hay un **juego libre** ilimitado, con desafíos nuevos cada vez, que no cuenta en las estadísticas. El desafío cambia todos los días a las **00:00 UTC**. No hace falta registrarse, y funciona en celulares, tablets y computadoras, en inglés y en español.
 
 ## Para el dueño del proyecto (sin programar)
 

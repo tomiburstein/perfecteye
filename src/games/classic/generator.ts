@@ -38,8 +38,9 @@ const roundPt = (p: Point): Point => pt(round1(p.x), round1(p.y));
 const inside = (p: Point, margin: number): boolean =>
   p.x >= margin && p.x <= BOARD_SIZE - margin && p.y >= margin && p.y <= BOARD_SIZE - margin;
 
-export function roundSeed(day: DayKey, round: RoundId): string {
-  return `${GAME_ID}:v${GENERATOR_VERSION}:${day}:${round}`;
+/** `key` is the UTC day for daily challenges, or `practice-<id>` for free play. */
+export function roundSeed(key: string, round: RoundId): string {
+  return `${GAME_ID}:v${GENERATOR_VERSION}:${key}:${round}`;
 }
 
 function attempt<T>(rng: Rng, make: (rng: Rng) => T | null, fallback: T): T {
@@ -173,17 +174,37 @@ export function generateShape(rng: Rng): ShapeChallenge {
   );
 }
 
-export function generateDailyChallenge(day: DayKey): DailyChallenge {
-  const rng = (id: RoundId) => createRng(roundSeed(day, id));
+function generateChallenge(key: string, day: DayKey, number: number): DailyChallenge {
+  const rng = (id: RoundId) => createRng(roundSeed(key, id));
   return {
     gameId: GAME_ID,
     version: GENERATOR_VERSION,
     day,
-    number: challengeNumber(day),
+    number,
     center: generateCenter(rng('center')),
     half: generateHalf(rng('half')),
     angle: generateAngle(rng('angle')),
     distance: generateDistance(rng('distance')),
     shape: generateShape(rng('shape')),
   };
+}
+
+export function generateDailyChallenge(day: DayKey): DailyChallenge {
+  return generateChallenge(day, day, challengeNumber(day));
+}
+
+/** Free play: a fresh challenge from a random id. Not shared, not counted in stats. */
+export function generatePracticeChallenge(id: string, day: DayKey): DailyChallenge {
+  return generateChallenge(`practice-${id}`, day, 0);
+}
+
+/** Random id for a free-play game (crypto when available). */
+export function newPracticeId(): string {
+  const bytes = new Uint8Array(8);
+  if (typeof crypto !== 'undefined' && typeof crypto.getRandomValues === 'function') {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
 }

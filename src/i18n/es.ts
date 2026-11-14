@@ -25,6 +25,14 @@ export const es: Messages = {
   'home.resume': 'Tienes el desafío #{n} de ayer sin terminar.',
   'home.resumeCta': 'Terminarlo',
   'home.testsTitle': 'Las cinco pruebas',
+  'home.practice': 'Juego libre',
+  'home.practiceDesc': 'Desafíos nuevos sin límite, cuando quieras. No cuentan en tus estadísticas ni en tu racha.',
+  'home.practiceCta': 'Jugar libre',
+  'mode.practice': 'Juego libre',
+  'results.practiceTitle': 'Juego libre',
+  'results.playAgain': 'Jugar otra vez',
+  'results.practiceNote': 'Las partidas de juego libre no cuentan en tus estadísticas ni en tu racha. El desafío diario es el que se comparte.',
+  'results.toDaily': 'Jugar el desafío de hoy',
   'home.nextIn': 'Próximo desafío en',
   'home.resetInfo': 'Cada día se publica un desafío nuevo a las 00:00 UTC ({local} en tu hora).',
 
@@ -147,6 +155,8 @@ export const es: Messages = {
     'Maestro del ángulo y La forma perfecta muestran su figura una sola vez. Recargar la página no la vuelve a mostrar.',
   'help.daily':
     'Todo el mundo juega el mismo desafío. Cambia cada día a las 00:00 UTC ({local} en tu hora).',
+  'help.practice':
+    '¿Quieres más? El juego libre te da desafíos nuevos todas las veces que quieras. Solo el desafío diario cuenta para tus estadísticas y tu racha.',
   'help.scoring':
     'Tu puntuación depende solo de cuánto se aleja tu respuesta de la correcta, medido en relación con la figura, así que es justa en cualquier pantalla.',
   'help.privacy':
