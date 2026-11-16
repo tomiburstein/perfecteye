@@ -79,7 +79,11 @@ export function WorldStanding({ day, player, answers, onRename }: Props) {
                 {t('world.better', { p: me.percentiles.total })}
               </p>
             )}
-            <p className="world__rank">{t('world.rank', { rank: me.rank, n: state.summary.players })}</p>
+            <p className="world__rank">
+              {state.summary.players === 1
+                ? t('world.rank1')
+                : t('world.rank', { rank: me.rank, n: state.summary.players })}
+            </p>
           </div>
           <ul className="world__rounds">
             {ROUND_IDS.map((id, i) => {

@@ -81,7 +81,9 @@ function WorldBoard({ today, player }: { today: DayKey; player: Player }) {
   const meInTop = summary.top.some((r) => r.me);
   return (
     <>
-      <p className="boards__meta">{t('boards.players', { n: summary.players })}</p>
+      <p className="boards__meta">
+        {summary.players === 1 ? t('boards.players1') : t('boards.players', { n: summary.players })}
+      </p>
       <ol className="ranking">
         {summary.top.map((r, i) => (
           <li key={`${r.rank}-${i}`} className={`ranking__row${r.me ? ' is-me' : ''}`}>
