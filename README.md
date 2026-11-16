@@ -19,7 +19,7 @@ Cada prueba tiene 60 segundos y vale hasta 100 puntos, con un máximo de 500 por
 - **Cómo se calculan los puntos:** [docs/SCORING.md](docs/SCORING.md).
 - **Cómo está organizado el código y cómo crecer:** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Costo actual: **USD 0**. El ranking mundial usa el plan gratuito de Cloudflare (Pages Functions + base de datos D1). No hay anuncios ni servicios pagos.
+Costo actual: **USD 0**. El ranking mundial usa el plan gratuito de Cloudflare (Workers + base de datos D1). No hay anuncios ni servicios pagos.
 
 ## Para desarrolladores
 
@@ -34,7 +34,7 @@ npm run test:e2e     # pruebas de navegador (Playwright), después de build
 npm run check        # todo junto
 ```
 
-Stack: React 19, TypeScript, Vite, SVG y CSS propios (sin librerías de UI). Pruebas con Vitest y Playwright. Se publica como sitio estático en Cloudflare Pages.
+Stack: React 19, TypeScript, Vite, SVG y CSS propios (sin librerías de UI). Pruebas con Vitest y Playwright. Se publica en Cloudflare Workers (archivos estáticos + una API mínima con base D1).
 
 ## Privacidad
 

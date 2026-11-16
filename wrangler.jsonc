@@ -1,0 +1,23 @@
+// Cloudflare Workers configuration for PerfectEye.
+// Deploy: `npm run build` then `npx wrangler deploy` (Cloudflare does this
+// automatically on every push to GitHub once the project is connected).
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "perfecteye",
+  "main": "src/server/worker.ts",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    // Only the ranking API runs code; everything else is served as static files.
+    "run_worker_first": ["/api/*"]
+  },
+  "d1_databases": [
+    {
+      // Created automatically on the first deploy, then reused.
+      "binding": "DB",
+      "database_name": "perfecteye-ranking"
+    }
+  ],
+  "observability": { "enabled": true }
+}

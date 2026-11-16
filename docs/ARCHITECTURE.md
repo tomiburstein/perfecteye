@@ -1,6 +1,6 @@
 # Arquitectura y mantenimiento
 
-PerfectEye es una **web estática** con un **servidor mínimo** para el ranking mundial: una función de Cloudflare Pages (`functions/api/results.ts`) y una base de datos Cloudflare D1. Todo el juego corre en el navegador y funciona aunque el servidor no responda.
+PerfectEye es una **web estática** con un **servidor mínimo** para el ranking mundial: un Cloudflare Worker (`src/server/worker.ts`) y una base de datos Cloudflare D1. Los archivos de la web se sirven como "static assets" sin ejecutar código; solo `/api/*` llega al Worker (configurado en `wrangler.jsonc`). Todo el juego corre en el navegador y funciona aunque el servidor no responda.
 
 ## Estructura
 
@@ -30,7 +30,9 @@ src/
   server/ranking.ts    Consultas a D1: guardar resultado, ranking del día, percentiles
   platform/api.ts      Cliente del ranking (falla de forma segura sin conexión)
   platform/player.ts   Identidad anónima del jugador (id aleatorio + nombre elegido)
-functions/api/         Servidor (Cloudflare Pages Functions): GET/POST /api/results
+  server/api.ts        Servidor: GET/POST /api/results
+  server/worker.ts     Punto de entrada del Worker (API + archivos estáticos)
+wrangler.jsonc         Configuración de Cloudflare (nombre, assets, base D1)
 tests/unit/            Pruebas Vitest (lógica)
 e2e/                   Pruebas Playwright (navegador real, 4 dispositivos)
 public/                Íconos, manifest, cabeceras de seguridad (_headers)
@@ -76,7 +78,7 @@ Cada prueba da 60 segundos (`ROUND_TIME_MS` en `config.ts`). El inicio se guarda
 | `npm test` | Pruebas unitarias |
 | `npm run build` | Compilación de producción en `dist/` |
 | `npm run test:e2e` | Pruebas de navegador con el servidor y la base de datos reales de Cloudflare en modo local (requiere `npm run build` antes) |
-| `npx wrangler pages dev dist --d1 DB` | Probar la web con el ranking en http://localhost:8788 |
+| `npx wrangler dev` | Probar la web con el ranking en http://localhost:8787 (después de `npm run build`) |
 | `npm run check` | Todo lo anterior en orden |
 
 ## Cómo agregar cosas en el futuro

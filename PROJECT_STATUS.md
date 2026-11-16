@@ -7,7 +7,7 @@
 - **Las cinco pruebas** (Find the Center, Perfect Half, Angle Master, Equal Distance, Perfect Shape). Cada una tiene interacción táctil, de mouse y de teclado, muestra el resultado con la respuesta correcta, una línea de error animada, el puntaje de 0 a 100 y una explicación del error.
 - **Desafío diario determinista:** fecha UTC + ID del juego + semilla + generador pseudoaleatorio. Es el mismo desafío para todos, cambia a las 00:00 UTC y no requiere servidor ni IA.
 - **Temporizador de 60 segundos por prueba.** No se reinicia al recargar. Al terminar el tiempo cuenta lo que haya en el tablero, y sin respuesta vale 0.
-- **Ranking mundial del día** (servidor en Cloudflare Pages Functions + base D1, gratis). El servidor recalcula los puntajes a partir de las respuestas, el primer resultado del día es el definitivo y el nombre es editable.
+- **Ranking mundial del día** (servidor en Cloudflare Workers + base D1, gratis). El servidor recalcula los puntajes a partir de las respuestas, el primer resultado del día es el definitivo y el nombre es editable.
 - **"Hoy en el mundo"** al terminar el desafío diario: en qué porcentaje de los jugadores estás, en total y por prueba, y tu puesto.
 - **Tablas de puntajes:** ranking de hoy (top 50 más tu posición), "Mis partidas" (todas, diarias y libres, ordenables por recientes o mejores) y estadísticas.
 - **Puntaje de Distancia igual más tolerante:** un error del 5% da 97 puntos (antes 84) y uno del 10% da 82 (antes 55).
@@ -41,6 +41,7 @@
 | Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 86 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
 | Angle Master: el mismo ángulo armado hacia cualquier lado de la base da puntaje perfecto | ✅ (lógica y navegador) |
 | Ranking contra el servidor y la base de datos reales de Cloudflare (en modo local): envío, percentiles, cambio de nombre, top del día, primer resultado definitivo, rechazo de trampas | ✅ |
+| Publicación simulada (`wrangler deploy --dry-run`) y cabeceras de seguridad sobre Workers | ✅ |
 | El juego sigue funcionando si el servidor del ranking no responde | ✅ |
 | Temporizador: cuenta regresiva, tiempo agotado con y sin respuesta, continúa tras recargar | ✅ |
 | Juego libre ilimitado sin afectar el desafío diario ni las estadísticas | ✅ |
@@ -63,8 +64,7 @@
 
 ## ⏳ Pendiente
 
-- **Activar la base D1 del ranking** en Cloudflare (docs/DEPLOY.md, paso 2b).
-- **Publicar en Cloudflare Pages** (requiere tu cuenta de GitHub y de Cloudflare; ver docs/DEPLOY.md).
+- **Publicar en Cloudflare Workers** (requiere tu cuenta de GitHub y de Cloudflare; ver docs/DEPLOY.md).
 - Probar en dispositivos reales (iPhone con Safari, Android con Chrome).
 - Decidir la fecha del desafío #1 (`LAUNCH_DAY`, hoy en 2026-11-12).
 - Opcional: dominio propio y `VITE_SITE_URL`.
@@ -72,7 +72,7 @@
 ## 🐞 Errores conocidos / limitaciones
 
 - **Ranking:** evita puntajes inventados, porque el servidor los recalcula, pero no evita bots. El generador es público, así que alguien técnico podría calcular respuestas perfectas o crear muchos jugadores. Ver mejoras en docs/ARCHITECTURE.md.
-- El ranking solo se pudo probar con el servidor de Cloudflare **en modo local**. En internet funcionará cuando se active la base D1 (docs/DEPLOY.md, paso 2b).
+- El ranking solo se pudo probar con el servidor de Cloudflare **en modo local**. La base D1 se crea sola en la primera publicación. Si el token automático no tuviera permiso, ver docs/DEPLOY.md.
 - El link de prueba privado dentro de Claude no tiene servidor, así que ahí "Hoy en el mundo" muestra que el ranking no está disponible.
 - El temporizador lo controla el navegador; el servidor no verifica el tiempo.
 
