@@ -249,7 +249,7 @@ export const es: Messages = {
   'admin.password': 'Contraseña del panel',
   'admin.enter': 'Entrar',
   'admin.wrong': 'Contraseña incorrecta.',
-  'admin.disabled': 'El panel está desactivado: falta configurar el secreto ADMIN_TOKEN en Cloudflare.',
+  'admin.disabled': 'El panel está desactivado: el secreto ADMIN_TOKEN no está configurado en Cloudflare o tiene menos de 12 caracteres.',
   'admin.error': 'No se pudo cargar el panel. Inténtalo de nuevo.',
   'admin.days': 'Jugadores por día',
   'admin.date': 'Fecha',

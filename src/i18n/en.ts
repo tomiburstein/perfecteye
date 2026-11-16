@@ -244,7 +244,7 @@ export const en = {
   'admin.password': 'Panel password',
   'admin.enter': 'Enter',
   'admin.wrong': 'Wrong password.',
-  'admin.disabled': 'The panel is off: the ADMIN_TOKEN secret is not set in Cloudflare yet.',
+  'admin.disabled': 'The panel is off: the ADMIN_TOKEN secret is not set in Cloudflare or is shorter than 12 characters.',
   'admin.error': 'Couldn’t load the panel. Try again.',
   'admin.days': 'Players per day',
   'admin.date': 'Date',
