@@ -14,6 +14,12 @@ import {
 } from './games/classic/persistence';
 import { loadPlayer, savePlayerName, type Player } from './platform/player';
 import { BoardsScreen } from './ui/screens/BoardsScreen';
+import { IntroScreen } from './ui/screens/IntroScreen';
+import { PrivacyScreen } from './ui/screens/PrivacyScreen';
+import { ContactScreen } from './ui/screens/ContactScreen';
+import { AdminScreen } from './ui/screens/AdminScreen';
+import { sendPracticeFinished, sendVisit } from './platform/api';
+import { readJson, writeJson } from './platform/storage';
 import type { GameRef } from './games/classic/types';
 import { Header } from './ui/components/Header';
 import { HelpDialog } from './ui/components/HelpDialog';
@@ -26,7 +32,17 @@ type Screen =
   | { name: 'home' }
   | { name: 'game'; game: GameRef }
   | { name: 'results'; game: GameRef; scores: number[] }
-  | { name: 'boards' };
+  | { name: 'boards' }
+  | { name: 'intro' };
+
+/** Pages reachable by link (#privacy, #contact, #admin). */
+type Page = 'privacy' | 'contact' | 'admin';
+const PAGES: readonly Page[] = ['privacy', 'contact', 'admin'];
+function pageFromHash(): Page | null {
+  const h = window.location.hash.replace('#', '');
+  return (PAGES as readonly string[]).includes(h) ? (h as Page) : null;
+}
+const LAST_VISIT_KEY = 'perfecteye.lastVisit';
 
 /** Current UTC day; re-renders only when the day actually changes. */
 function useToday(): DayKey {
@@ -44,12 +60,28 @@ export function App() {
   const [screen, setScreen] = useState<Screen>({ name: 'home' });
   const [modal, setModal] = useState<'help' | null>(null);
   const today = useToday();
+  const [page, setPage] = useState<Page | null>(() => pageFromHash());
+  useEffect(() => {
+    const onHash = () => {
+      setPage(pageFromHash());
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('hashchange', onHash);
+    return () => window.removeEventListener('hashchange', onHash);
+  }, []);
   const prefersDark = usePrefersDark();
 
   const lang: Lang = settings.lang ?? detectLang(navigator.languages ?? [navigator.language]);
   const dark = settings.theme ? settings.theme === 'dark' : prefersDark;
   const [player, setPlayer] = useState<Player>(() => loadPlayer(store, translate(lang, 'player.defaultName')));
   const rename = (name: string) => setPlayer((p) => savePlayerName(store, p, name));
+
+  // Count unique visitors per day (anonymous id, once per day per device).
+  useEffect(() => {
+    if (readJson(store, LAST_VISIT_KEY) === today) return;
+    writeJson(store, LAST_VISIT_KEY, today);
+    sendVisit(today, player.id);
+  }, [store, today, player.id]);
 
   const updateSettings = (patch: Partial<Settings>) => {
     const next = { ...settings, ...patch };
@@ -77,6 +109,14 @@ export function App() {
   }, []);
 
   const go = useCallback((next: Screen) => {
+    if (pageFromHash()) {
+      try {
+        window.history.replaceState(null, '', window.location.pathname + window.location.search);
+      } catch {
+        window.location.hash = '';
+      }
+      setPage(null);
+    }
     setScreen((prev) => {
       if (prev.name === 'home' && next.name !== 'home') {
         try {
@@ -91,6 +131,11 @@ export function App() {
   }, []);
 
   const goHome = useCallback(() => {
+    if (pageFromHash()) {
+      window.location.hash = '';
+      setScreen({ name: 'home' });
+      return;
+    }
     let viaHistory = false;
     try {
       viaHistory = Boolean(window.history.state?.pe);
@@ -102,14 +147,23 @@ export function App() {
   }, []);
 
   const onFinish = useCallback(
-    (game: GameRef, scores: number[]) => go({ name: 'results', game, scores }),
-    [go],
+    (game: GameRef, scores: number[]) => {
+      if (game.kind === 'practice') sendPracticeFinished(game.day, player.id);
+      go({ name: 'results', game, scores });
+    },
+    [go, player.id],
   );
-  const playDaily = useCallback((day: DayKey) => go({ name: 'game', game: { kind: 'daily', day } }), [go]);
+  const startDaily = useCallback((day: DayKey) => go({ name: 'game', game: { kind: 'daily', day } }), [go]);
   const playPractice = useCallback(
     () => go({ name: 'game', game: { kind: 'practice', id: newPracticeId(), day: toDayKey(new Date()) } }),
     [go],
   );
+  // First visit: a short introduction before the first daily challenge.
+  const playDaily = (day: DayKey) => (settings.onboarded ? startDaily(day) : go({ name: 'intro' }));
+  const finishIntro = (then: () => void) => {
+    updateSettings({ onboarded: true });
+    then();
+  };
 
   // Fresh reads from storage whenever the screen or the day changes.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,7 +193,11 @@ export function App() {
         />
         {!isPersistentStorageAvailable() && <StorageWarning />}
 
-        {screen.name === 'home' && (
+        {page === 'privacy' && <PrivacyScreen />}
+        {page === 'contact' && <ContactScreen player={player} />}
+        {page === 'admin' && <AdminScreen />}
+
+        {!page && screen.name === 'home' && (
           <HomeScreen
             today={today}
             history={history}
@@ -150,7 +208,7 @@ export function App() {
             onResults={(day) => go({ name: 'results', game: { kind: 'daily', day }, scores: history[day]?.scores ?? [] })}
           />
         )}
-        {screen.name === 'game' && (
+        {!page && screen.name === 'game' && (
           <GameScreen
             key={screen.game.kind === 'daily' ? screen.game.day : screen.game.id}
             game={screen.game}
@@ -159,7 +217,7 @@ export function App() {
             onExit={goHome}
           />
         )}
-        {screen.name === 'results' && (
+        {!page && screen.name === 'results' && (
           <ResultsScreen
             game={screen.game}
             scores={screen.scores}
@@ -173,7 +231,10 @@ export function App() {
             onRename={rename}
           />
         )}
-        {screen.name === 'boards' && (
+        {!page && screen.name === 'intro' && (
+          <IntroScreen onStart={() => finishIntro(() => startDaily(today))} onPractice={() => finishIntro(playPractice)} />
+        )}
+        {!page && screen.name === 'boards' && (
           <BoardsScreen today={today} player={player} history={history} practice={practiceHistory} />
         )}
 
@@ -195,5 +256,14 @@ function StorageWarning() {
 
 function Footer() {
   const { t } = useI18n();
-  return <footer className="footer">{t('footer.note')}</footer>;
+  return (
+    <footer className="footer">
+      <nav className="footer__links">
+        <a href="#privacy">{t('footer.privacy')}</a>
+        <span aria-hidden="true">·</span>
+        <a href="#contact">{t('footer.contact')}</a>
+      </nav>
+      <p>{t('footer.note')}</p>
+    </footer>
+  );
 }

@@ -48,7 +48,7 @@ export function BoardsScreen({ today, player, history, practice }: Props) {
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'world' && <WorldBoard today={today} player={player} />}
         {tab === 'mine' && <MyGames history={history} practice={practice} />}
-        {tab === 'stats' && <StatsPanel history={history} today={today} />}
+        {tab === 'stats' && <StatsPanel history={history} today={today} practice={practice} />}
       </div>
     </main>
   );

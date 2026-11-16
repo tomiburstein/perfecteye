@@ -7,6 +7,8 @@ import { isRecord, readJson, writeJson, type KeyValueStore } from './storage';
 export interface Player {
   id: string;
   name: string;
+  /** True once the player chose a name (or explicitly kept the default). */
+  named: boolean;
 }
 
 export const PLAYER_KEY = 'perfecteye.player';
@@ -28,18 +30,19 @@ export function loadPlayer(store: KeyValueStore, defaultNamePrefix: string): Pla
     raw.name.length >= 2 &&
     raw.name.length <= 20
   ) {
-    return { id: raw.id, name: raw.name };
+    return { id: raw.id, name: raw.name, named: raw.named === true };
   }
   const player = {
     id: randomHex(12),
     name: `${defaultNamePrefix} ${1000 + Math.floor(Math.random() * 9000)}`,
+    named: false,
   };
   writeJson(store, PLAYER_KEY, player);
   return player;
 }
 
 export function savePlayerName(store: KeyValueStore, player: Player, name: string): Player {
-  const next = { ...player, name };
+  const next = { ...player, name, named: true };
   writeJson(store, PLAYER_KEY, next);
   return next;
 }

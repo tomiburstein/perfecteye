@@ -45,9 +45,29 @@ Algunos tokens automáticos no tienen permiso para crear bases de datos. En ese 
 2. Copia su **Database ID**, que no es secreto, y pásaselo a Claude para que lo agregue en `wrangler.jsonc`.
 3. Vuelve a publicar (**Deployments → Retry**, o sube cualquier cambio).
 
-## Paso 4 (opcional) — Dominio propio
+## Paso 4 — Contraseña del panel del dueño
 
-En el proyecto: **Settings → Domains & Routes → Add → Custom domain**. El dominio tiene que estar en Cloudflare (se puede comprar ahí mismo a precio de costo). Después, opcionalmente, agrega la variable de compilación `VITE_SITE_URL` = `https://tu-dominio` para que los mensajes para compartir usen esa dirección.
+El panel (`/#admin`) muestra jugadores por día, los mensajes de contacto y permite ocultar nombres del ranking. Está apagado hasta que se configura una contraseña:
+
+1. **Workers & Pages → perfecteye → Settings → Variables and Secrets → Add**.
+2. **Type:** `Secret`. **Variable name:** `ADMIN_TOKEN`. **Value:** una contraseña larga (por ejemplo, 4 o 5 palabras al azar separadas por guiones, mínimo 12 caracteres).
+3. **Save / Deploy**.
+4. Abre `https://<tu-dirección>/#admin` y escribe esa contraseña. Solo queda guardada mientras la pestaña esté abierta.
+
+Nunca compartas esa contraseña (tampoco en el chat con Claude).
+
+## Paso 5 (opcional) — Dominio propio
+
+**Comprarlo (Cloudflare Registrar, precio de costo, sin recargos):**
+1. Menú izquierdo: **Domains → Register domains** (o "Buy a domain").
+2. Busca el nombre (por ejemplo `perfecteye`) y elige la extensión. Cloudflare muestra precio y disponibilidad.
+3. Completa los datos y paga con tarjeta. La renovación es anual y automática. Tus datos personales quedan ocultos en el registro público (WHOIS) sin costo.
+
+**Conectarlo al juego:**
+1. **Workers & Pages → perfecteye → Domains → Add Domain**.
+2. Escribe el dominio (por ejemplo `perfecteye.app`) → **Add domain**. Opcional: agrega también `www.perfecteye.app`.
+3. El certificado de seguridad (HTTPS) se crea solo en pocos minutos.
+4. Pídele a Claude que cambie `VITE_SITE_URL` en `.env.production` y que agregue la redirección desde la dirección `workers.dev`, para que los links viejos lleven al dominio nuevo.
 
 ## Antes de lanzar
 

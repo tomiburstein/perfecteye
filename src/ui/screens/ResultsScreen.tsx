@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useI18n } from '../../i18n';
 import type { DayKey } from '../../platform/date';
 import { gradeKey } from '../../games/classic/describe';
@@ -10,6 +10,7 @@ import { Countdown } from '../components/Countdown';
 import { RoundGlyph } from '../components/RoundGlyph';
 import { ShareBox } from '../components/ShareBox';
 import { WorldStanding } from '../components/WorldStanding';
+import { WorldAnswers } from '../components/WorldAnswers';
 import type { Player } from '../../platform/player';
 import { useCountUp } from '../hooks';
 
@@ -110,6 +111,9 @@ function DailyResults({ day, today, history, onHome, onPractice, player, answers
     };
   }, [history, day]);
 
+  const [percentile, setPercentile] = useState<number | null>(null);
+  const [standingLoaded, setStandingLoaded] = useState(false);
+
   if (!entry) return null;
 
   const diff = previous ? entry.total - previous.average : 0;
@@ -118,9 +122,20 @@ function DailyResults({ day, today, history, onHome, onPractice, player, answers
     <main className="screen results" aria-labelledby="results-title">
       <p className="kicker">{t('results.title', { n: entry.number })}</p>
       <Total total={entry.total} />
+      <ShareBox number={entry.number} scores={entry.scores} percentile={percentile} />
       <ScoreRows scores={entry.scores} />
 
-      <WorldStanding day={day} player={player} answers={answers} onRename={onRename} />
+      <WorldStanding
+        day={day}
+        player={player}
+        answers={answers}
+        onRename={onRename}
+        onPercentile={(p) => {
+          setPercentile(p);
+          setStandingLoaded(true);
+        }}
+      />
+      {standingLoaded && <WorldAnswers day={day} playerId={player.id} />}
 
       <div className="compare">
         <div className="compare__item">
@@ -141,8 +156,6 @@ function DailyResults({ day, today, history, onHome, onPractice, player, answers
           )}
         </div>
       </div>
-
-      <ShareBox number={entry.number} scores={entry.scores} />
 
       <Countdown />
       <AdSlot placement="results" />

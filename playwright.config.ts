@@ -16,7 +16,7 @@ export default defineConfig({
   },
   webServer: {
     command:
-      'rm -rf .wrangler/state && npx wrangler dev --port 4173 --var PE_TEST_ANY_DAY:1 --show-interactive-dev-session=false',
+      'rm -rf .wrangler/state && npx wrangler dev --port 4173 --var PE_TEST_ANY_DAY:1 --var ADMIN_TOKEN:test-admin-token-123 --show-interactive-dev-session=false',
     url: 'http://localhost:4173',
     reuseExistingServer: false,
     timeout: 60_000,

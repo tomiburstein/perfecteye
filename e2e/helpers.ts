@@ -3,11 +3,26 @@ import { expect, type Page } from '@playwright/test';
 export const DAY_1 = new Date('2026-11-20T15:00:00Z');
 
 /** Freeze the clock at a known UTC time (timers can still be advanced). */
-export async function openAt(page: Page, time: Date, lang = 'en') {
+export async function openAt(page: Page, time: Date, lang = 'en', onboarded = true) {
   await page.clock.install({ time });
-  await page.addInitScript((l) => {
-    Object.defineProperty(navigator, 'languages', { get: () => [l] });
-  }, lang);
+  await page.addInitScript(
+    ([l, ob]) => {
+      Object.defineProperty(navigator, 'languages', { get: () => [l] });
+      if (ob) {
+        // Skip the first-time introduction (it has its own test).
+        try {
+          const s = JSON.parse(localStorage.getItem('perfecteye.settings') || '{}');
+          if (s && typeof s === 'object' && s.onboarded === undefined) {
+            s.onboarded = true;
+            localStorage.setItem('perfecteye.settings', JSON.stringify(s));
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+    },
+    [lang, onboarded] as const,
+  );
   await page.goto('/');
 }
 

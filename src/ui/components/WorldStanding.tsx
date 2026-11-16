@@ -13,20 +13,24 @@ interface Props {
   /** Answers of the finished game, if still on this device (needed to submit). */
   answers: (AnyAnswer | null)[] | null;
   onRename: (name: string) => void;
+  onPercentile?: (p: number | null) => void;
 }
 
 /** "Where am I in the world today": percentile overall and per test. */
-export function WorldStanding({ day, player, answers, onRename }: Props) {
+export function WorldStanding({ day, player, answers, onRename, onPercentile }: Props) {
   const { t } = useI18n();
   const [state, setState] = useState<ApiResult | null>(null);
-  const [editing, setEditing] = useState(false);
+  // First finished game: ask for a name right away instead of "Player 1234".
+  const [editing, setEditing] = useState(!player.named);
   const [draftName, setDraftName] = useState(player.name);
   const [nameError, setNameError] = useState(false);
 
   const load = useCallback(
     async (name: string) => {
       setState(null);
-      setState(answers ? await submitDay(day, player.id, name, answers) : await fetchDay(day, player.id));
+      const result = answers ? await submitDay(day, player.id, name, answers) : await fetchDay(day, player.id);
+      setState(result);
+      onPercentile?.(result.ok ? (result.summary.me?.percentiles.total ?? null) : null);
     },
     [day, player.id, answers],
   );
@@ -109,7 +113,7 @@ export function WorldStanding({ day, player, answers, onRename }: Props) {
       <div className="world__player">
         {editing ? (
           <form className="name-form" onSubmit={saveName}>
-            <label htmlFor="player-name">{t('world.playingAs')}</label>
+            <label htmlFor="player-name">{player.named ? t('world.playingAs') : t('world.askName')}</label>
             <div className="name-form__row">
               <input
                 id="player-name"
@@ -123,8 +127,15 @@ export function WorldStanding({ day, player, answers, onRename }: Props) {
               <button className="btn btn--primary btn--sm" type="submit">
                 {t('world.save')}
               </button>
-              <button className="btn btn--ghost btn--sm" type="button" onClick={() => setEditing(false)}>
-                {t('world.cancel')}
+              <button
+                className="btn btn--ghost btn--sm"
+                type="button"
+                onClick={() => {
+                  setEditing(false);
+                  if (!player.named) onRename(player.name); // keep the default, stop asking
+                }}
+              >
+                {player.named ? t('world.cancel') : t('world.keepDefault')}
               </button>
             </div>
             <p id="player-name-help" className={`fineprint${nameError ? ' is-error' : ''}`}>

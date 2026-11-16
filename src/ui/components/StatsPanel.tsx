@@ -1,12 +1,21 @@
 import { useMemo } from 'react';
 import { useI18n } from '../../i18n';
 import { dayKeyToMs, type DayKey } from '../../platform/date';
-import type { History } from '../../games/classic/persistence';
+import type { History, PracticeEntry } from '../../games/classic/persistence';
+import { Evolution } from './Evolution';
 import { computeStats } from '../../games/classic/stats';
 import { MAX_TOTAL_SCORE } from '../../games/classic/types';
 import { RoundGlyph } from './RoundGlyph';
 
-export function StatsPanel({ history, today }: { history: History; today: DayKey }) {
+export function StatsPanel({
+  history,
+  today,
+  practice,
+}: {
+  history: History;
+  today: DayKey;
+  practice: PracticeEntry[];
+}) {
   const { t, num, lang } = useI18n();
   const stats = useMemo(() => computeStats(history, today), [history, today]);
   const dayFmt = useMemo(
@@ -76,6 +85,8 @@ export function StatsPanel({ history, today }: { history: History; today: DayKey
           </ul>
         </>
       )}
+      <h3 className="section-title">{t('evo.title')}</h3>
+      <Evolution history={history} practice={practice} />
       <p className="fineprint">{t('stats.local')}</p>
     </div>
   );

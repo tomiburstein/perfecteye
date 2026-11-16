@@ -6,6 +6,15 @@
 
 - **Las cinco pruebas** (Find the Center, Perfect Half, Angle Master, Equal Distance, Perfect Shape). Cada una tiene interacción táctil, de mouse y de teclado, muestra el resultado con la respuesta correcta, una línea de error animada, el puntaje de 0 a 100 y una explicación del error.
 - **Desafío diario determinista:** fecha UTC + ID del juego + semilla + generador pseudoaleatorio. Es el mismo desafío para todos, cambia a las 00:00 UTC y no requiere servidor ni IA.
+- **Introducción para jugadores nuevos** antes del primer desafío, con la opción de practicar primero.
+- **Angle Master:** la base gira de forma visible, con una flecha y la anotación "base girada".
+- **Compartir:** botones justo debajo del total, mensaje con cuadraditos de colores por prueba y el porcentaje "mejor que el X%".
+- **Vista previa del link** (WhatsApp, redes) con imagen y dirección completas (`.env.production`).
+- **Nombre en el ranking:** se pide al terminar la primera partida diaria.
+- **"Cómo respondió el mundo":** dónde respondió cada jugador en las 5 pruebas, con tu respuesta destacada. Solo se muestra a quien ya jugó ese día.
+- **"Tu evolución":** tendencia por prueba en tus últimas partidas (Tablas → Estadísticas).
+- **Páginas de Privacidad y de Contacto y errores** (con aviso de nombre ofensivo).
+- **Panel del dueño** (`/#admin`, protegido con contraseña): visitantes únicos por día, partidas diarias y libres, mensajes, y ocultar nombres del ranking.
 - **Temporizador de 60 segundos por prueba.** No se reinicia al recargar. Al terminar el tiempo cuenta lo que haya en el tablero, y sin respuesta vale 0.
 - **Ranking mundial del día** (servidor en Cloudflare Workers + base D1, gratis). El servidor recalcula los puntajes a partir de las respuestas, el primer resultado del día es el definitivo y el nombre es editable.
 - **"Hoy en el mundo"** al terminar el desafío diario: en qué porcentaje de los jugadores estás, en total y por prueba, y tu puesto.
@@ -31,17 +40,18 @@
 | Verificación | Resultado |
 |---|---|
 | Compilación de producción (`tsc` + `vite build`) | ✅ Sin errores. JS 87 KB comprimido, CSS 4,4 KB |
-| Pruebas unitarias (Vitest) | ✅ 90/90 |
+| Pruebas unitarias (Vitest) | ✅ 91/91 |
 | Fórmulas: perfecto = 100, rango 0–100, monotonía, valores de referencia | ✅ |
 | Mismo día → mismo desafío | ✅ |
 | 1000 días consecutivos → 1000 desafíos distintos (y cada prueba distinta por separado) | ✅ |
 | Figuras dentro del tablero, sin configuraciones triviales | ✅ (sobre 1000 días) |
 | Guardado y validación de datos (incluidos datos corruptos o manipulados) | ✅ |
 | No se puede puntuar dos veces (lógica y recarga real en el navegador) | ✅ |
-| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 86 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
+| Pruebas de navegador (Playwright): escritorio, iPhone 13, Pixel 7 y iPad emulados | ✅ 118 pasan, 6 omitidas a propósito (pruebas de teclado solo en escritorio) |
 | Angle Master: el mismo ángulo armado hacia cualquier lado de la base da puntaje perfecto | ✅ (lógica y navegador) |
 | Ranking contra el servidor y la base de datos reales de Cloudflare (en modo local): envío, percentiles, cambio de nombre, top del día, primer resultado definitivo, rechazo de trampas | ✅ |
 | Publicación simulada (`wrangler deploy --dry-run`) y cabeceras de seguridad sobre Workers | ✅ |
+| Introducción, giro del ángulo, vista previa del link, "cómo respondió el mundo" (y bloqueo antes de jugar), evolución, privacidad, contacto, panel con contraseña y moderación | ✅ |
 | El juego sigue funcionando si el servidor del ranking no responde | ✅ |
 | Temporizador: cuenta regresiva, tiempo agotado con y sin respuesta, continúa tras recargar | ✅ |
 | Juego libre ilimitado sin afectar el desafío diario ni las estadísticas | ✅ |
@@ -63,6 +73,9 @@
 - No se corrió Lighthouse ni una auditoría de accesibilidad automatizada.
 
 ## ⏳ Pendiente
+
+- **Configurar la contraseña del panel** (`ADMIN_TOKEN`, docs/DEPLOY.md, paso 4).
+- Decidir y comprar un dominio propio (docs/DEPLOY.md, paso 5).
 
 - **Publicar en Cloudflare Workers** (requiere tu cuenta de GitHub y de Cloudflare; ver docs/DEPLOY.md).
 - Probar en dispositivos reales (iPhone con Safari, Android con Chrome).

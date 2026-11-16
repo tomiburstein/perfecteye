@@ -2,32 +2,43 @@ import { describe, expect, it } from 'vitest';
 import { createI18n, detectLang, translate } from '../../src/i18n';
 import { en } from '../../src/i18n/en';
 import { es } from '../../src/i18n/es';
-import { buildShareText, shareLinks } from '../../src/games/classic/share';
+import { buildShareText, scoreBlocks, shareLinks } from '../../src/games/classic/share';
 import { generateDailyChallenge } from '../../src/games/classic/generator';
 
 describe('share text', () => {
   it('matches the expected format', () => {
-    const text = buildShareText(createI18n('en'), 42, [94, 88, 96, 91, 85], 'https://perfecteye.example');
+    const text = buildShareText(createI18n('en'), 42, [94, 88, 96, 91, 85], 'https://perfecteye.example', 88);
     expect(text).toBe(
       [
         'PERFECTEYE #042',
-        '🎯 Center: 94/100',
-        '📏 Half: 88/100',
-        '📐 Angle: 96/100',
-        '📍 Distance: 91/100',
-        '🔺 Shape: 85/100',
+        '🎯 🟩🟩🟩🟩🟨 94',
+        '📏 🟩🟩🟩🟩⬜ 88',
+        '📐 🟩🟩🟩🟩🟨 96',
+        '📍 🟩🟩🟩🟩🟨 91',
+        '🔺 🟩🟩🟩🟩⬜ 85',
         'TOTAL: 454/500',
+        '👁 Better than 88% of today’s players',
         'Can you beat my score?',
         'https://perfecteye.example',
       ].join('\n'),
     );
   });
 
-  it('is translated to Spanish', () => {
+  it('omits the percentile line when unknown, and is translated to Spanish', () => {
     const text = buildShareText(createI18n('es'), 7, [1, 2, 3, 4, 5], 'https://x.y');
     expect(text).toContain('PERFECTEYE #007');
-    expect(text).toContain('🎯 Centro: 1/100');
+    expect(text).toContain('🎯 ⬜⬜⬜⬜⬜ 1');
     expect(text).toContain('¿Puedes superarme?');
+    expect(text).not.toContain('👁');
+    expect(buildShareText(createI18n('es'), 7, [1, 2, 3, 4, 5], '', 40)).toContain('Mejor que el 40%');
+  });
+
+  it('turns scores into five blocks', () => {
+    expect(scoreBlocks(100)).toBe('🟩🟩🟩🟩🟩');
+    expect(scoreBlocks(0)).toBe('⬜⬜⬜⬜⬜');
+    expect(scoreBlocks(50)).toBe('🟩🟩🟨⬜⬜');
+    expect(scoreBlocks(59)).toBe('🟩🟩🟨⬜⬜');
+    expect(scoreBlocks(60)).toBe('🟩🟩🟩⬜⬜');
   });
 
   it('never reveals the solution', () => {

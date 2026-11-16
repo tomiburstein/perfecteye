@@ -65,6 +65,15 @@ public/                Íconos, manifest, cabeceras de seguridad (_headers)
 
 **Límites conocidos (decirlo con honestidad):** el generador de desafíos está en el navegador, así que una persona con conocimientos técnicos podría calcular las respuestas perfectas o enviar resultados con muchos ids distintos. El ranking evita que se *inventen* puntajes, pero no evita bots. Mejoras posibles a futuro: Cloudflare Turnstile (gratis) contra bots, semilla secreta en el servidor para que el desafío no se pueda precalcular, y validación del tiempo de juego del lado del servidor.
 
+## Visitas, comentarios y panel del dueño
+
+- `POST /api/visit`: una vez por día y por dispositivo (id al azar), para contar visitantes únicos. Sin cookies.
+- `POST /api/event`: cuenta las partidas libres terminadas.
+- `POST /api/feedback`: mensajes de contacto (máximo 5 por jugador por día, hasta 1000 caracteres).
+- `GET /api/world`: respuestas de todos los jugadores del día, transformadas en errores. Solo responde a quien ya jugó ese día (si no, 403), para no regalar las soluciones.
+- `/api/admin*`: exige `Authorization: Bearer <ADMIN_TOKEN>` (secreto de Cloudflare, comparado en tiempo constante). Sin el secreto, el panel queda apagado (503).
+- Las tablas y columnas nuevas se crean o agregan solas (`ensureSchema`), sin perder datos.
+
 ## Temporizador
 
 Cada prueba da 60 segundos (`ROUND_TIME_MS` en `config.ts`). El inicio se guarda en el progreso, así que recargar la página no reinicia el reloj. Al terminar el tiempo cuenta lo que haya en el tablero; si no hay nada, vale 0.

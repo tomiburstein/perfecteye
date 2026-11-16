@@ -151,7 +151,7 @@ function TimerText({ startedAt }: { startedAt: number }) {
       role="timer"
       aria-label={t('game.timeLeft', { s: seconds })}
     >
-      0:{String(seconds).padStart(2, '0')}
+      {Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, '0')}
     </span>
   );
 }

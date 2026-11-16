@@ -29,7 +29,8 @@ test('full game: five rounds, results, share text and stats', async ({ page }) =
   const share = await page.getByTestId('share-text').textContent();
   expect(share).toContain('PERFECTEYE #009');
   expect(share).toContain(`TOTAL: ${total}/500`);
-  expect(share?.split('\n')).toHaveLength(9);
+  expect(share?.split('\n').length).toBeGreaterThanOrEqual(9);
+  expect(share).toMatch(/🎯 [🟩🟨⬜]{5} \d+/u);
   await expect(page.getByRole('link', { name: 'WhatsApp' })).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=PERFECTEYE/);
 
   // World standing: percentile overall and per test, computed by the server.
@@ -112,7 +113,7 @@ test('angle: the same opening built on either side scores (almost) perfect', asy
 test('each test has a 60-second timer; time out with no answer scores 0', async ({ page }) => {
   await openAt(page, DAY_1);
   await page.getByRole('button', { name: "Play today's challenge" }).click();
-  await expect(page.getByRole('timer')).toHaveText(/0:(60|59)/);
+  await expect(page.getByRole('timer')).toHaveText(/^(1:00|0:59)$/);
   await page.clock.runFor(50_000);
   await expect(page.getByRole('timer')).toHaveText(/0:1\d/);
   await page.clock.runFor(11_000);
@@ -149,12 +150,13 @@ test('world ranking: name change, today worldwide and my games', async ({ page, 
   await expect(page.locator('.world__big')).toContainText(/Better than \d+% of today’s players/);
   await expect(page.locator('.world__rank')).toContainText(/of \d+ players/);
 
-  await page.getByRole('button', { name: 'Change' }).click();
-  await page.getByLabel('Your name in the ranking').fill('<bad>');
+  // First finished game: the name prompt is already open.
+  await expect(page.getByLabel('What name should appear in the world ranking?')).toBeVisible();
+  await page.getByLabel('What name should appear in the world ranking?').fill('<bad>');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByText('That name can’t be used.', { exact: false })).toBeVisible();
   const name = `Ana ${Math.floor(Math.random() * 9000) + 1000}`;
-  await page.getByLabel('Your name in the ranking').fill(name);
+  await page.getByLabel('What name should appear in the world ranking?').fill(name);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.locator('.world__as')).toContainText(name);
 
@@ -175,6 +177,122 @@ test('without the ranking server the game still works', async ({ page }) => {
   await expect(page.getByText('The world ranking isn’t available right now.', { exact: false })).toBeVisible();
   await expect(page.getByTestId('share-text')).toContainText('PERFECTEYE #009');
   expect(errors.filter((e) => !e.includes('503'))).toEqual([]);
+});
+
+test('first visit shows a short introduction before the first daily challenge', async ({ page }) => {
+  await openAt(page, DAY_1, 'en', false);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await expect(page.getByRole('heading', { name: 'Before you start' })).toBeVisible();
+  await expect(page.locator('.intro__step')).toHaveCount(3);
+  // No timer is running yet: nothing has started.
+  await expect(page.getByRole('timer')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Practise first' }).click();
+  await expect(page.getByText('Free play').first()).toBeVisible();
+  // Seen once: next time the daily challenge starts directly.
+  await page.getByRole('button', { name: 'PerfectEye home' }).click();
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await expect(page.getByRole('heading', { name: /Find the Center/ })).toBeVisible();
+});
+
+test('angle master shows that the base was rotated', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await playRound(page);
+  await next(page);
+  await playRound(page);
+  await next(page);
+  await page.getByRole('button', { name: 'Show me' }).click();
+  await page.clock.runFor(3500);
+  await expect(page.locator('.rotate-hint')).toBeAttached();
+  await expect(page.locator('.rotate-hint text')).toHaveText('rotated base');
+});
+
+test('link previews use an absolute image URL', async ({ page }) => {
+  await page.goto('/');
+  const img = await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(img).toMatch(/^https:\/\/.+\/og-image\.png$/);
+  expect(await page.locator('meta[property="og:url"]').getAttribute('content')).toMatch(/^https:\/\//);
+});
+
+test('how the world answered and your evolution', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(page);
+  await expect(page.getByRole('heading', { name: 'How the world answered' })).toBeVisible();
+  await expect(page.locator('.wa__card')).toHaveCount(5);
+  await expect(page.locator('.wa__you').first()).toBeAttached();
+  // A free-play game, then the evolution sparklines appear.
+  await page.getByRole('button', { name: /Play again/ }).click();
+  await playWholeGame(page);
+  await page.getByRole('button', { name: 'Scoreboards' }).click();
+  await page.getByRole('tab', { name: 'Statistics' }).click();
+  await expect(page.getByText('Your evolution')).toBeVisible();
+  await expect(page.locator('.evo__row')).toHaveCount(5);
+});
+
+test('the world answers are only shown to people who already played', async ({ request }) => {
+  const res = await request.get('/api/world?day=2026-11-20&playerId=ffffffffffffffff');
+  expect(res.status()).toBe(403);
+});
+
+test('privacy page and contact form', async ({ page }) => {
+  await openAt(page, DAY_1);
+  await page.getByRole('link', { name: 'Privacy' }).click();
+  await expect(page.getByRole('heading', { name: 'Privacy' })).toBeVisible();
+  await expect(page.getByText('No cookies, no ads', { exact: false })).toBeVisible();
+  await page.getByRole('link', { name: 'Contact & bugs' }).first().click();
+  await expect(page.getByRole('heading', { name: 'Contact & bugs' })).toBeVisible();
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(page.getByText('Write at least a few words.')).toBeVisible();
+  await page.getByLabel('Idea or suggestion').check();
+  await page.getByLabel('Your message').fill('Please add a hexagon test! (e2e)');
+  await page.getByRole('button', { name: 'Send' }).click();
+  await expect(page.getByText('Thanks! We’ll read it soon.')).toBeVisible();
+  // Home is one tap away.
+  await page.getByRole('button', { name: 'PerfectEye home' }).click();
+  await expect(page.getByRole('button', { name: "Play today's challenge" })).toBeVisible();
+});
+
+test('owner panel: password, players per day, messages and hiding a name', async ({ page, browser }) => {
+  // A player with an offensive-ish but allowed name finishes the daily challenge.
+  const other = await browser.newPage();
+  await openAt(other, DAY_1);
+  await other.getByRole('button', { name: "Play today's challenge" }).click();
+  await playWholeGame(other);
+  const name = `Troll ${Math.floor(Math.random() * 9000) + 1000}`;
+  await other.getByLabel('What name should appear in the world ranking?').fill(name);
+  await other.getByRole('button', { name: 'Save' }).click();
+  await expect(other.locator('.world__as')).toContainText(name);
+  await other.goto('/#contact');
+  await other.getByLabel('Offensive name in the ranking').check();
+  await other.getByLabel('Your message').fill(`Please remove ${name}`);
+  await other.getByRole('button', { name: 'Send' }).click();
+  await expect(other.getByText('Thanks!', { exact: false })).toBeVisible();
+  await other.close();
+
+  await openAt(page, DAY_1);
+  await page.goto('/#admin');
+  await page.getByLabel('Panel password').fill('wrong-password-000');
+  await page.getByRole('button', { name: 'Enter' }).click();
+  await expect(page.getByText('Wrong password.')).toBeVisible();
+  await page.getByLabel('Panel password').fill('test-admin-token-123');
+  await page.getByRole('button', { name: 'Enter' }).click();
+  await expect(page.getByRole('heading', { name: 'Players per day' })).toBeVisible();
+  await expect(page.locator('.table tbody tr').first()).toBeVisible();
+  await expect(page.locator('.msgs__item', { hasText: `Please remove ${name}` })).toBeVisible();
+
+  const row = page.locator('.mod li', { hasText: name });
+  await row.getByRole('button', { name: 'Hide' }).click();
+  await expect(row).toContainText('(hidden)');
+
+  const res = await page.request.get('/api/results?day=2026-11-20');
+  const top = (await res.json()).top as { name: string }[];
+  expect(top.some((r) => r.name === name)).toBe(false);
+});
+
+test('owner API refuses requests without the password', async ({ request }) => {
+  expect((await request.get('/api/admin')).status()).toBe(401);
+  expect((await request.post('/api/admin/hide', { data: { day: '2026-11-20', playerId: 'aaaaaaaaaaaaaaaa', hidden: true } })).status()).toBe(401);
 });
 
 test('copy to clipboard', async ({ page, context, browserName }) => {

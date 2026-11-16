@@ -29,11 +29,19 @@ async function copyText(text: string): Promise<boolean> {
   }
 }
 
-export function ShareBox({ number, scores }: { number: number; scores: number[] }) {
+export function ShareBox({
+  number,
+  scores,
+  percentile = null,
+}: {
+  number: number;
+  scores: number[];
+  percentile?: number | null;
+}) {
   const i18n = useI18n();
   const { t } = i18n;
   const url = siteUrl();
-  const text = buildShareText(i18n, number, scores, url);
+  const text = buildShareText(i18n, number, scores, url, percentile);
   const links = shareLinks(text, url);
   const [status, setStatus] = useState<'idle' | 'copied' | 'failed'>('idle');
   const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
@@ -45,7 +53,6 @@ export function ShareBox({ number, scores }: { number: number; scores: number[] 
       <h2 id="share-title" className="section-title">
         {t('share.title')}
       </h2>
-      <pre className="share__preview" data-testid="share-text">{text}</pre>
       <div className="share__buttons">
         {canNativeShare && (
           <button
@@ -72,6 +79,10 @@ export function ShareBox({ number, scores }: { number: number; scores: number[] 
           {t('share.telegram')}
         </a>
       </div>
+      <details className="share__details">
+        <summary>{t('share.showText')}</summary>
+        <pre className="share__preview" data-testid="share-text">{text}</pre>
+      </details>
       <p className="share__status" role="status" aria-live="polite">
         {status === 'copied' ? t('share.copied') : status === 'failed' ? t('share.copyFailed') : ''}
       </p>

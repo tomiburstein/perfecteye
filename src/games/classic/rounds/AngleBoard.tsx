@@ -15,6 +15,11 @@ function arcPath(v: Point, r: number, from: number, to: number): string {
 export function AngleBoard({ challenge, mode, answer, onChange, onSubmit }: RoundBoardProps<'angle'>) {
   const { t } = useI18n();
   const { vertex, rayLength, targetDeg, previewBaseDeg, inputBaseDeg } = challenge.angle;
+  // Shortest visual rotation from the preview base to the input base, in (-180, 180].
+  const turn = (() => {
+    const d = normDeg(inputBaseDeg - previewBaseDeg);
+    return d > 180 ? d - 360 : d;
+  })();
 
   const setDeg = (deg: number) => onChange({ deg: Math.round(normDeg(deg) * 10) / 10 });
   const aim = (p: Point) => {
@@ -75,8 +80,42 @@ export function AngleBoard({ challenge, mode, answer, onChange, onSubmit }: Roun
           <circle className="mk__ring" cx={userEnd.x} cy={userEnd.y} r="16" />
         </g>
       )}
-      {ray(base, 'shape-stroke')}
+      {mode === 'input' ? (
+        <>
+          {/* The base visibly turns from where it was to its new direction. */}
+          <g
+            className="base-rotate"
+            style={{ ['--from' as string]: `${turn}deg`, transformOrigin: `${vertex.x}px ${vertex.y}px` }}
+          >
+            {ray(base, 'shape-stroke')}
+          </g>
+          <RotationHint vertex={vertex} from={previewBaseDeg} turn={turn} label={t('round.angle.rotated')} />
+        </>
+      ) : (
+        ray(base, 'shape-stroke')
+      )}
       <circle className="vertex-dot" cx={vertex.x} cy={vertex.y} r="10" />
     </Board>
+  );
+}
+
+/** Hand-drawn curved arrow showing how the base line was rotated. */
+function RotationHint({ vertex, from, turn, label }: { vertex: Point; from: number; turn: number; label: string }) {
+  const r = 175;
+  const to = from + turn;
+  const path = turn >= 0 ? arcPath(vertex, r, from, to) : arcPath(vertex, r, to, from);
+  const end = polar(vertex, to, r);
+  const back = (turn >= 0 ? to + 90 : to - 90) + 180;
+  const h1 = polar(end, back + 32, 26);
+  const h2 = polar(end, back - 32, 26);
+  const labelAt = polar(vertex, from + turn / 2, r + 58);
+  return (
+    <g className="rotate-hint" aria-hidden="true">
+      <path d={path} />
+      <path d={`M ${h1.x} ${h1.y} L ${end.x} ${end.y} L ${h2.x} ${h2.y}`} />
+      <text x={labelAt.x} y={labelAt.y} textAnchor="middle" dominantBaseline="central">
+        {label}
+      </text>
+    </g>
   );
 }
